@@ -24,7 +24,7 @@ def m8(cube):
     m8cube[1:rsize, 1:csize, :] = (cube[0:rsize-1, 0:csize-1] + cube[0:rsize-1, 1:csize] +
                            cube[0:rsize-1, 2:csize+1] + cube[1:rsize, 0:csize-1] + cube[1:rsize, 2:csize+1] +
                            cube[2:rsize+1, 0:csize-1] + cube[2:rsize+1, 1:csize] + cube[2:rsize+1, 2:csize+1]) / 8
-
+    ## TODO
     m8cube[:, 0, col] = (cube[:, 0, col_m1] + cube[:, 1, col_m1] + cube[:, 1, col] + cube[:, 1, col_p1] + cube[:, rsize,
                                                                                                           col_p1]) / 5
     m8cube[:, rsize, col] = (cube[:, rsize, col_m1] + cube[:, rsize - 1, col_m1] + cube[:, rsize - 1, col]
