@@ -39,7 +39,10 @@ if __name__ == "__main__":
     a = np.array([[0, 0, 0],
                   [1, 0, 1],
                   [0, 1, 0]])
-    b = np.ones(shape=(10, 3, 3))
-    b[0] = a
-    b[2] = -a
-    print(m8(b))  # print(m8(a))
+    b = np.ones(shape=(3, 3,3))
+    b[:,:,0] = a
+    b[:,:,2] = -a
+    print(b)  # print(m8(a))
+    print(b.shape)
+    print(b.reshape(3,9))
+    print(b)
