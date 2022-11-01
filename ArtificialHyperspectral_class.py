@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 
 
-class ArtificialHyperspectralCube(spy.SpyFile):
+class ArtificialHyperspectralCube():
     def __init__(self, header):
-        spy.SpyFile.__init__()
+
         originalData = spy.open_image(header)
         originalData_np = originalData.open_memmap()  # for working with numpy
 
