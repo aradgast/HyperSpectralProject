@@ -1,4 +1,6 @@
 import spectral as spy
+from scipy import stats
+#import scipy.stats.kstest as ks
 import matplotlib.pyplot as plt
 import numpy as np
 from find_nu import find_nu
@@ -6,19 +8,47 @@ from m8 import m8
 from ArtificialHyperspectral_class import ArtificialHyperspectralCube
 
 if __name__ == "__main__":
-    z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
+    # z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
+    # plt.figure(1)
+    # plt.plot([i for i in range(len(z.nu))], z.nu, title='nu')
+    # plt.figure(2)
+    # plt.plot([i for i in range(len(z.m8))], z.m8, title='m8')
+    # plt.figure(3)
+    # plt.imshow(z.data[:, :, 0].reshape(z.rowNum, z.colNum), cmap='gist_rainbow', title="'0' band")
+    # plt.show()
+    # Loading the data
+    #
+
+    ############################################################### ido's attempt
+    img = spy.open_image('D1_F12_H2_Cropped_des_Aligned.hdr')
+    img_np = img.open_memmap()  # for working with numpy
+
+    rowNum, colNum, bandsNum = img.shape
+    print(img[:, :,200].shape)
+
+
+    # plt.plot(img_np[:, :, 200].reshape(rowNum, colNum))
+    plt.imshow(img[:, :,200].reshape(rowNum, colNum))
     plt.figure(1)
-    plt.plot([i for i in range(len(z.nu))], z.nu, title='nu')
-    plt.figure(2)
-    plt.plot([i for i in range(len(z.m8))], z.m8, title='m8')
-    plt.figure(3)
-    plt.imshow(z.data[:, :, 0].reshape(z.rowNum, z.colNum), cmap='gist_rainbow', title="'0' band")
     plt.show()
 
-    # # Loading the data
-    #
-    # img = spy.open_image('D1_F12_H2_Cropped_des_Aligned.hdr')
-    # img_np = img.open_memmap()  # for working with numpy
+    print(img[:, :,200].shape)
+
+    m8x_cube = m8(img_np)
+    matrix_x = img_np.reshape(bandsNum, rowNum*colNum)    # how do I take only the 200 band?
+    #matrix_x = matrix_x[200, :]
+
+    print(matrix_x.shape)
+    cov_x_cube = np.cov(matrix_x)
+    nu_x_cube = find_nu(matrix_x, m8x_cube, cov_x_cube)     # need to use the 200 band
+    ArtificialHyperspectralCube.create_z_cube(nu_x_cube)  # how do I take the data from z.data?
+
+    comp_mat = np.zeros(shape=(rowNum, colNum))
+    print(comp_mat.shape)
+
+    comp_mat_t = np.random.standard_t(comp_mat, size=(rowNum, colNum)) ##
+    stats.kstest(img_np[:, :,200].reshape(rowNum, colNum), comp_mat_t)   # consider using ks_2samp instead
+
     #
     # r, c, s = img.shape
     # pca = spy.algorithms.principal_components(img)
