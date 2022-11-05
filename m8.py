@@ -3,8 +3,15 @@ import numpy as np
 
 def m8(cube):
     """calculate the 8,5,3 neighbors average for subtracting the background"""
+    is_matrix = False
+    if len(cube.shape) == 3:
+        rpic, cpic, bands = cube.shape
+    elif len(cube.shape) == 2:
+        is_matrix = True
+        rpic, cpic = cube.shape
+        bands = 1
+        cube = cube.reshape(rpic, cpic, bands)
 
-    rpic, cpic, bands = cube.shape
     m8cube = np.zeros(shape=(rpic, cpic, bands))
     rsize = rpic - 1
     csize = cpic - 1
@@ -31,7 +38,8 @@ def m8(cube):
     m8cube[0, csize] = (cube[0, csize - 1] + cube[1, csize - 1] + cube[1, csize]) / 3
     m8cube[rsize, 0] = (cube[rsize - 1, 0] + cube[rsize - 1, 1] + cube[rsize, 1]) / 3
     m8cube[rsize, csize] = (cube[rsize - 1, csize - 1] + cube[rsize - 1, csize] + cube[rsize, csize - 1]) / 3
-
+    if is_matrix:
+        m8cube = m8cube.reshape(rpic, cpic)
     return m8cube
 
 

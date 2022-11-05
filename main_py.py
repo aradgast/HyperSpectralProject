@@ -1,6 +1,6 @@
 import spectral as spy
+import scipy
 from scipy import stats
-#import scipy.stats.kstest as ks
 import matplotlib.pyplot as plt
 import numpy as np
 from find_nu import find_nu
@@ -17,73 +17,47 @@ if __name__ == "__main__":
     # plt.imshow(z.data[:, :, 0].reshape(z.rowNum, z.colNum), cmap='gist_rainbow', title="'0' band")
     # plt.show()
     # Loading the data
-    #
+    def calc_cumulative_dist(mat):
+        """this function get as parameter a matrix,
+            and return the cumulative distribution vector"""
+        my_hist = np.histogram(mat, 100)
+        my_p_vec = np.zeros(shape=len(my_hist[0]))
+        s = 0
+        for i in range(len(my_p_vec)):
+            s += my_hist[0][i] / sum(my_hist[0])
+            my_p_vec[i] = s
+        return my_p_vec
 
-    ############################################################### ido's attempt
+
+    ###############################################################
     img = spy.open_image('D1_F12_H2_Cropped_des_Aligned.hdr')
-    img_np = img.open_memmap()  # for working with numpy
+    img_np = img.open_memmap().copy()  # for working with numpy
 
     rowNum, colNum, bandsNum = img.shape
-    print(img[:, :,200].shape)
 
+    matrix_x = img_np[:, :, 200].reshape(rowNum, colNum)
+    matrix_x -= m8(matrix_x)
+    matrix_x *= 1 / np.sqrt(np.cov(matrix_x.reshape(rowNum*colNum)))
 
-    # plt.plot(img_np[:, :, 200].reshape(rowNum, colNum))
-    plt.imshow(img[:, :,200].reshape(rowNum, colNum))
-    plt.figure(1)
+    nu_tmp = 2  # starts from nu value = 2
+    simulation = 100  # number of nu values testing
+    comp_mat = np.zeros(shape=(rowNum, colNum, simulation))  # save the matrix represent the distribution
+    res_vec = []
+    x_nu = []
+    p_vec = calc_cumulative_dist(matrix_x)
+    for i in range(simulation):
+        comp_mat[:, :, i] = np.random.standard_t(nu_tmp, size=(rowNum, colNum))
+        p_tmp = calc_cumulative_dist(comp_mat[:, :, i])
+        test = stats.ks_2samp(p_vec, p_tmp)  # KS test for comparing 2 unknown distribution samples
+        if test[1] > 0.05:  # if the hypothesis is correct so add to the result vector
+            x_nu.append(nu_tmp)
+            res_vec.append(test[0])
+        nu_tmp += 8 / simulation
+
+    plt.figure()
+    plt.stem(x_nu, res_vec)
+    plt.title('KS test result')
+    plt.xlabel('nu values')
+    plt.ylabel('max of the distance')
+    plt.grid()
     plt.show()
-
-    print(img[:, :,200].shape)
-
-    m8x_cube = m8(img_np)
-    matrix_x = img_np.reshape(bandsNum, rowNum*colNum)    # how do I take only the 200 band?
-    #matrix_x = matrix_x[200, :]
-
-    print(matrix_x.shape)
-    cov_x_cube = np.cov(matrix_x)
-    nu_x_cube = find_nu(matrix_x, m8x_cube, cov_x_cube)     # need to use the 200 band
-    ArtificialHyperspectralCube.create_z_cube(nu_x_cube)  # how do I take the data from z.data?
-
-    comp_mat = np.zeros(shape=(rowNum, colNum))
-    print(comp_mat.shape)
-
-    comp_mat_t = np.random.standard_t(comp_mat, size=(rowNum, colNum)) ##
-    stats.kstest(img_np[:, :,200].reshape(rowNum, colNum), comp_mat_t)   # consider using ks_2samp instead
-
-    #
-    # r, c, s = img.shape
-    # pca = spy.algorithms.principal_components(img)
-    # eigD = pca.eigenvalues  # values are OK but on reverse order
-    # eigV = pca.eigenvectors  # because eigenvalues on reverse order so as the vectors
-    # m8x = m8(img_np)  # it's not a m8 calc, it's a mean for each band
-    # phi_x = pca.cov  # values are ok
-    #
-    # # Y cube ############
-    #
-    # y = pca.transform(img)  # need to check it
-    # y_np = y.image.open_memmap().copy()
-    # for band in range(s):
-    #     y_np[:, :, band] *= 1 / np.sqrt((np.var(y_np[:, :, band])))
-    #
-    # m8y = m8(y_np)  # much larger values(bigger in 2 order)
-    # matrix_y = y_np.reshape(s, r * c)
-    # phi_y = np.cov(matrix_y)
-    #
-    # nu_x = find_nu(img, m8x, phi_x)
-    # nu_y = find_nu(y_np, m8y, phi_y)
-    #
-    # # Z cube ############
-    #
-    # z = np.zeros(shape=(r, c, s))
-    #
-    # for band in range(s):
-    #     z[:, :, band] += np.random.standard_t(nu_y[band], size=(r, c))
-    #     z[:, :, band] *= 1 / np.sqrt(np.var(z[:, :, band]))
-    #
-    # matrix_z = z.reshape(s, r * c)
-    # phi_z = np.cov(matrix_z)
-    # m8z = m8(z)
-    # nu_z = find_nu(z, m8z, phi_z)
-    #
-    # plt.imshow(img[:, :, int(input('band:'))].reshape(r, c), cmap='gray')
-    # # # plt.imshow(pca_img[:,:,int(input('band:'))].reshape(r,c), cmap='gray')
-    # plt.show()
