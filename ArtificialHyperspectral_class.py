@@ -9,29 +9,29 @@ class ArtificialHyperspectralCube:
     def __init__(self, header):
 
         self.data = np.ndarray(0)
-        original_data = spy.open_image(header)
-        original_data_np = original_data.open_memmap()  # for working with numpy
+        self.original_data = spy.open_image(header)
+        original_data_np = self.original_data.open_memmap()  # for working with numpy
 
-        self.rowNum, self.colNum, self.bandsNum = original_data.shape
-        original_data_pca = spy.algorithms.principal_components(original_data)
+        self.rowNum, self.colNum, self.bandsNum = self.original_data.shape
+        original_data_pca = spy.algorithms.principal_components(self.original_data)
         # eigD = original_data_pca.eigenvalues  # values are OK but on reverse order
         # eigV = original_data_pca.eigenvectors  # because eigenvalues on reverse order so as the vectors
-        m8original_data = m8(original_data_np)
-        cov_original_data = original_data_pca.cov
+        self.m8original_data = m8(original_data_np)
+        self.cov_original_data = original_data_pca.cov
 
         # Y cube ############
 
-        y_cube = original_data_pca.transform(original_data)
-        y_cube_np = y_cube.image.open_memmap().copy()
-        m8y_cube = m8(y_cube_np)
+        self.y_cube = original_data_pca.transform(self.original_data)
+        y_cube_np = self.y_cube.image.open_memmap().copy()
+        self.m8y_cube = m8(y_cube_np)
         for band in range(self.bandsNum):
             y_cube_np[:, :, band] *= 1 / np.sqrt(np.var(y_cube_np[:, :, band]))
 
         matrix_y = y_cube_np.reshape(self.bandsNum, self.rowNum * self.colNum)
-        cov_y_cube = np.cov(matrix_y)
+        self.cov_y_cube = np.cov(matrix_y)
 
-        nu_original_data = find_nu(original_data, m8original_data, cov_original_data)
-        nu_y_cube = find_nu(y_cube, m8y_cube, cov_y_cube)
+        nu_original_data = find_nu(self.original_data, self.m8original_data, self.cov_original_data)
+        nu_y_cube = find_nu(self.y_cube, self.m8y_cube, self.cov_y_cube)
 
         # Z cube ############
         self.create_z_cube(nu_y_cube)
@@ -45,6 +45,7 @@ class ArtificialHyperspectralCube:
         for band in range(self.bandsNum):
             self.data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rowNum, self.colNum))
             self.data[:, :, band] *= 1 / np.sqrt(np.var(self.data[:, :, band]))
+
 
 
 if __name__ == "__main__":
