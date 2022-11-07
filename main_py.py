@@ -34,7 +34,7 @@ if __name__ == "__main__":
     img_np = img.open_memmap().copy()  # for working with numpy
 
     rowNum, colNum, bandsNum = img.shape
-
+    fig_cnt = 0
     bands_vec = [50, 100, 150, 200, 250, 300, 350]
     for band in bands_vec:
 
@@ -59,18 +59,17 @@ if __name__ == "__main__":
                 res_vec_p_value.append(test[1])
             nu_tmp += 8 / simulation
 
-        plt.figure()
-        plt.stem(x_nu, res_vec_stats)
-        plt.title(f'KS statistics result for band {band}')
-        plt.xlabel('nu values')
-        plt.ylabel('max of the distance')
-        plt.grid()
-        plt.show()
+        f, (ax1, ax2) = plt.subplots(2, 1, sharex='col')
+        ax1.stem(x_nu, res_vec_stats)
+        ax1.set_title(f'KS statistics result for band {band}')
+        ax1.set_ylabel('max of the distance')
+        ax1.grid()
 
-        plt.figure()
-        plt.stem(x_nu, res_vec_p_value)
-        plt.title(f'KS p-value result for band {band}')
-        plt.xlabel('nu values')
-        plt.ylabel('max of the probability')
-        plt.grid()
-        plt.show()
+        fig_cnt += 1
+        ax2.stem(x_nu, res_vec_p_value)
+        ax2.set_title(f'KS p-value result for band {band}')
+        ax2.set_xlabel('nu values')
+        ax2.set_ylabel('max of the probability')
+        ax2.grid()
+        fig_cnt += 1
+    plt.show()
