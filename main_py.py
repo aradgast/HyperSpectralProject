@@ -35,38 +35,46 @@ if __name__ == "__main__":
 
     rowNum, colNum, bandsNum = img.shape
     fig_cnt = 0
-    bands_vec = [50, 100, 150, 200, 250, 300, 350]
+    # bands_vec = [50, 100, 150, 200, 250, 300, 350]
+    bands_vec = [50]
     for band in bands_vec:
 
         matrix_x = img_np[:, :, band].reshape(rowNum, colNum)
         matrix_x -= m8(matrix_x)
         matrix_x *= 1 / np.sqrt(np.cov(matrix_x.reshape(rowNum*colNum)))
-
-        nu_tmp = 2  # starts from nu value = 2
-        simulation = 300  # number of nu values testing
+        matrix_x = np.sort(matrix_x)
+        nu_tmp = 1  # starts from nu value = 2
+        simulation = 100  # number of nu values testing
         comp_mat = np.zeros(shape=(rowNum, colNum, simulation))  # save the matrix represent the distribution
         res_vec_p_value = []
         res_vec_stats = []
         x_nu = []
         p_vec = calc_cumulative_dist(matrix_x)
         for i in range(simulation):
-            comp_mat[:, :, i] = np.random.standard_t(nu_tmp, size=(rowNum, colNum))
-            p_tmp = calc_cumulative_dist(comp_mat[:, :, i])
-            test = stats.ks_2samp(p_vec, p_tmp)  # KS test for comparing 2 unknown distribution samples
-            if test[1] > 0.05:  # if the hypothesis is correct so add to the result vector
-                x_nu.append(nu_tmp)
-                res_vec_stats.append(test[0])
-                res_vec_p_value.append(test[1])
-            nu_tmp += 8 / simulation
+            if i< simulation//2:
+                comp_mat[:, :, i] = np.random.standard_t(nu_tmp, size=(rowNum, colNum))
+                test = stats.ks_2samp(matrix_x.reshape(rowNum * colNum), np.sort(
+                    comp_mat[:, :, i].reshape(rowNum * colNum)))  # KS test for comparing 2 unknown distribution samples
+
+            else:
+                test = stats.ks_2samp(matrix_x.reshape(rowNum * colNum), np.sort(
+                    np.random.normal(loc=0, scale=1, size=rowNum*colNum)))  # KS test for comparing 2 unknown distribution samples
+            # p_tmp = calc_cumulative_dist(comp_mat[:, :, i])
+            # test = stats.ks_2samp(matrix_x.reshape(rowNum*colNum),np.sort(comp_mat[:,:,i].reshape(rowNum*colNum)))  # KS test for comparing 2 unknown distribution samples
+            # if test[1] < 0.05:  # if the hypothesis is correct so add to the result vector
+            x_nu.append(nu_tmp)
+            res_vec_stats.append(test[0])
+            res_vec_p_value.append(test[1])
+            nu_tmp += 50 / simulation
 
         f, (ax1, ax2) = plt.subplots(2, 1, sharex='col')
-        ax1.stem(x_nu, res_vec_stats)
+        ax1.plot(x_nu, res_vec_stats)
         ax1.set_title(f'KS statistics result for band {band}')
         ax1.set_ylabel('max of the distance')
         ax1.grid()
 
         fig_cnt += 1
-        ax2.stem(x_nu, res_vec_p_value)
+        ax2.plot(x_nu, res_vec_p_value)
         ax2.set_title(f'KS p-value result for band {band}')
         ax2.set_xlabel('nu values')
         ax2.set_ylabel('max of the probability')
