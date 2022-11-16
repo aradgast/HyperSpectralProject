@@ -43,7 +43,7 @@ if __name__ == "__main__":
         matrix_x -= m8(matrix_x)
         matrix_x *= 1 / np.sqrt(np.cov(matrix_x.reshape(rowNum*colNum)))
         plt.figure(1)
-        plt.hist(matrix_x,bins=1000)
+        plt.hist(matrix_x,bins=100)
         plt.title(f'band {band} histogram')
         nu_tmp = 1  # starts from nu value = 2
         simulation = 100  # number of nu values testing
@@ -60,26 +60,24 @@ if __name__ == "__main__":
             res_vec_stats.append(test[0])
             res_vec_p_value.append(test[1])
             nu_tmp += 8 / simulation
-        f, (ax1, ax2, ax3, ax4,) = plt.subplots(2, 2)
-        ax1.plot(x_nu, res_vec_stats, label='t dist')
-        ax1.set_title(f'KS statistics result for band {band}')
-        ax1.set_ylabel('statistics value')
-        ax1.legend()
-        ax1.grid()
+        f, axs = plt.subplots(2, 2)
+        axs[0, 0].plot(x_nu, res_vec_stats, label='t dist')
+        axs[0, 0].set_title(f'KS statistics result for band {band}')
+        axs[0, 0].set_ylabel('statistics value')
+        axs[0, 0].grid()
 
         fig_cnt += 1
-        ax2.plot(x_nu, res_vec_p_value)
-        ax2.set_title(f'KS p-value result for band {band}')
-        ax2.set_xlabel('nu values')
-        ax2.set_ylabel('p-value')
-        ax2.grid()
-        ax2.legend()
+        axs[1, 0].plot(x_nu, res_vec_p_value)
+        axs[1, 0].set_title(f'KS p-value result for band {band}')
+        axs[1, 0].set_xlabel('nu values')
+        axs[1, 0].set_ylabel('p-value')
+        axs[1, 0].grid()
+S
+        axs[0, 1].hist(comp_mat[:,0], bins=500)
+        axs[0, 1].set_title(f'histogram for t_dist, nu={x_nu[0]}')
 
-        ax3.hist(comp_mat[:,0], bins=1000)
-        ax3.set_title(f'histogram for t_dist, nu={x_nu[0]}')
-
-        ax3.hist(comp_mat[:, -1], bins=1000)
-        ax3.set_title(f'histogram for t_dist, nu={x_nu[-1]}')
+        axs[1, 1].hist(comp_mat[:, -1], bins=100)
+        axs[1, 1].set_title(f'histogram for t_dist, nu={x_nu[-1]}')
 
 
         fig_cnt += 1
