@@ -42,42 +42,57 @@ if __name__ == "__main__":
         matrix_x = img_np[:, :, band].reshape(rowNum, colNum)
         matrix_x -= m8(matrix_x)
         matrix_x *= 1 / np.sqrt(np.cov(matrix_x.reshape(rowNum*colNum)))
-        matrix_x = np.sort(matrix_x)
+        plt.figure(1)
+        plt.hist(matrix_x,bins=1000)
+        plt.title(f'band {band} histogram')
         nu_tmp = 1  # starts from nu value = 2
         simulation = 100  # number of nu values testing
-        comp_mat = np.zeros(shape=(rowNum, colNum, simulation))  # save the matrix represent the distribution
+        comp_mat = np.zeros(shape=(rowNum*colNum//4, simulation))  # save the matrix represent the distribution
         res_vec_p_value = []
         res_vec_stats = []
         x_nu = []
-        p_vec = calc_cumulative_dist(matrix_x)
-        for i in range(simulation):
-            if i< simulation//2:
-                comp_mat[:, :, i] = np.random.standard_t(nu_tmp, size=(rowNum, colNum))
-                test = stats.ks_2samp(matrix_x.reshape(rowNum * colNum), np.sort(
-                    comp_mat[:, :, i].reshape(rowNum * colNum)))  # KS test for comparing 2 unknown distribution samples
 
-            else:
-                test = stats.ks_2samp(matrix_x.reshape(rowNum * colNum), np.sort(
-                    np.random.normal(loc=0, scale=1, size=rowNum*colNum)))  # KS test for comparing 2 unknown distribution samples
-            # p_tmp = calc_cumulative_dist(comp_mat[:, :, i])
-            # test = stats.ks_2samp(matrix_x.reshape(rowNum*colNum),np.sort(comp_mat[:,:,i].reshape(rowNum*colNum)))  # KS test for comparing 2 unknown distribution samples
-            # if test[1] < 0.05:  # if the hypothesis is correct so add to the result vector
+        for i in range(simulation):
+            # if i< simulation//2:
+            comp_mat[:, i] = np.random.standard_t(nu_tmp, size=rowNum*colNum//4)
+            test = stats.ks_2samp(matrix_x.reshape(rowNum * colNum),comp_mat[:, i], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
             x_nu.append(nu_tmp)
             res_vec_stats.append(test[0])
             res_vec_p_value.append(test[1])
-            nu_tmp += 50 / simulation
-
-        f, (ax1, ax2) = plt.subplots(2, 1, sharex='col')
-        ax1.plot(x_nu, res_vec_stats)
+            nu_tmp += 8 / simulation
+        f, (ax1, ax2, ax3, ax4,) = plt.subplots(2, 2)
+        ax1.plot(x_nu, res_vec_stats, label='t dist')
         ax1.set_title(f'KS statistics result for band {band}')
-        ax1.set_ylabel('max of the distance')
+        ax1.set_ylabel('statistics value')
+        ax1.legend()
         ax1.grid()
 
         fig_cnt += 1
         ax2.plot(x_nu, res_vec_p_value)
         ax2.set_title(f'KS p-value result for band {band}')
         ax2.set_xlabel('nu values')
-        ax2.set_ylabel('max of the probability')
+        ax2.set_ylabel('p-value')
         ax2.grid()
+        ax2.legend()
+
+        ax3.hist(comp_mat[:,0], bins=1000)
+        ax3.set_title(f'histogram for t_dist, nu={x_nu[0]}')
+
+        ax3.hist(comp_mat[:, -1], bins=1000)
+        ax3.set_title(f'histogram for t_dist, nu={x_nu[-1]}')
+
+
         fig_cnt += 1
     plt.show()
+
+    n1 = np.random.normal(0,1, 1000)
+    n4 = np.random.normal(0,1, 1000)
+    n2 = np.random.normal(0,2, 1000)
+    n3 = np. random.normal(0,1,500)
+    res1 = stats.ks_2samp(n1,n2)
+    res2 = stats.ks_2samp(n1,n3)
+    res3 = stats.ks_2samp(n1,n4)
+
+    print(f'results for two normal dist with diffrent std -> {res1}')
+    print(f'results for two normal dist with same std but diffrent length -> {res2}')
+    print(f'results for the same normal dist diffrent sample -> {res3}')
