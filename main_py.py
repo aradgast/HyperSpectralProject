@@ -45,7 +45,7 @@ if __name__ == "__main__":
         plt.figure(1)
         plt.hist(matrix_x,bins=100)
         plt.title(f'band {band} histogram')
-        nu_tmp = 1  # starts from nu value = 2
+        nu_tmp = 2  # starts from nu value = 2
         simulation = 100  # number of nu values testing
         comp_mat = np.zeros(shape=(rowNum*colNum//4, simulation))  # save the matrix represent the distribution
         res_vec_p_value = []
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             x_nu.append(nu_tmp)
             res_vec_stats.append(test[0])
             res_vec_p_value.append(test[1])
-            nu_tmp += 8 / simulation
+            nu_tmp += 6 / simulation
         f, axs = plt.subplots(2, 2)
         axs[0, 0].plot(x_nu, res_vec_stats, label='t dist')
         axs[0, 0].set_title(f'KS statistics result for band {band}')
@@ -72,25 +72,28 @@ if __name__ == "__main__":
         axs[1, 0].set_xlabel('nu values')
         axs[1, 0].set_ylabel('p-value')
         axs[1, 0].grid()
-S
-        axs[0, 1].hist(comp_mat[:,0], bins=500)
+
+        axs[0, 1].hist(comp_mat[:,0], bins=700)
         axs[0, 1].set_title(f'histogram for t_dist, nu={x_nu[0]}')
+        axs[0, 1].set_xlim([-20, 20])
 
         axs[1, 1].hist(comp_mat[:, -1], bins=100)
-        axs[1, 1].set_title(f'histogram for t_dist, nu={x_nu[-1]}')
+        axs[1, 1].set_title(f'histogram for t_dist, nu={"{:.2f}".format(x_nu[-1])}')
 
 
         fig_cnt += 1
     plt.show()
 
-    n1 = np.random.normal(0,1, 1000)
-    n4 = np.random.normal(0,1, 1000)
-    n2 = np.random.normal(0,2, 1000)
-    n3 = np. random.normal(0,1,500)
+    n1 = np.random.normal(0,1, 100)
+    n4 = np.random.normal(0,1, 100)
+    n2 = np.random.normal(0,2, 100)
+    n3 = np. random.normal(0,1,50)
     res1 = stats.ks_2samp(n1,n2)
     res2 = stats.ks_2samp(n1,n3)
     res3 = stats.ks_2samp(n1,n4)
+    res4 = stats.ks_2samp(n1,n1)
 
     print(f'results for two normal dist with diffrent std -> {res1}')
     print(f'results for two normal dist with same std but diffrent length -> {res2}')
     print(f'results for the same normal dist diffrent sample -> {res3}')
+    print(f'results for the same normal dist same sample -> {res4}')
