@@ -34,8 +34,8 @@ if __name__ == "__main__":
     img_np = img.open_memmap().copy()  # for working with numpy
 
     rowNum, colNum, bandsNum = img.shape
-    bands_vec = [50, 100, 150, 200, 250, 300, 350]
-    # bands_vec = [155]
+    # bands_vec = [50, 100, 150, 200, 250, 300, 350]
+    bands_vec = [150]
     for band in bands_vec:
 
         matrix_x = img_np[:, :, band].reshape(rowNum, colNum)
@@ -52,6 +52,7 @@ if __name__ == "__main__":
         for i in range(simulation):
             comp_mat[:, i] = np.random.standard_t(nu_tmp, size=rowNum*colNum)
             comp_mat[:, i] *= 1/np.sqrt(np.cov(comp_mat[:, i]))
+            comp_mat[:, i] -= np.mean(comp_mat[:, i])
             test = stats.ks_2samp(matrix_x,comp_mat[:, i], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
             x_nu.append(nu_tmp)
             res_vec_stats.append(test[0])
@@ -71,11 +72,11 @@ if __name__ == "__main__":
         idx = np.array(res_vec_stats).argmin()
         axs[0, 1].hist(comp_mat[:,idx], bins=800)
         axs[0, 1].set_title(f'histogram for t_dist for the lowest statistics, nu={"{:.3f}".format(x_nu[idx])}')
-        axs[0, 1].set_xlim([-20, 20])
+        # axs[0, 1].set_xlim([-20, 20])
 
-        axs[1, 1].hist(matrix_x, bins=300)
+        axs[1, 1].hist(matrix_x, bins=800)
         axs[1, 1].set_title(f'histogram for band={band}')
-        axs[1, 1].set_xlim([-20, 20])
+        # axs[1, 1].set_xlim([-20, 20])
 
 
     f.tight_layout()
