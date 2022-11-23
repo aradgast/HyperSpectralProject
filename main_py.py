@@ -13,14 +13,8 @@ if __name__ == "__main__":
     z_mt_no_target_cube, z_mf_target_cube = matched_filter(0.065, z.data, z.m8, z.cov, (5,3), True, 'Z')
     x_mt_no_target_cube, x_mf_target_cube = matched_filter(0.065, z.original_data, z.m8original_data, z.cov_original_data, (5,3), True, 'X')
     y_mt_no_target_cube, y_mf_target_cube = matched_filter(0.065, z.y_cube, z.m8y_cube, z.cov_y_cube, (5,3), True, 'Y')
-    # plt.figure(1)
-    # plt.plot([i for i in range(len(z.nu))], z.nu, title='nu')
-    # plt.figure(2)
-    # plt.plot([i for i in range(len(z.m8))], z.m8, title='m8')
-    # plt.figure(3)
-    # plt.imshow(z.data[:, :, 0].reshape(z.rowNum, z.colNum), cmap='gist_rainbow', title="'0' band")
-    # plt.show()
-    # Loading the data
+    pass    #for debugging
+
 
 
 
