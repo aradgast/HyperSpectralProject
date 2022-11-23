@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, target: tuple, plot_flag=False) \
+def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, target: tuple, plot_flag=False, plot_header=None) \
         -> (np.ndarray, np.ndarray):
     """this function implement the MF algorithm on 2 cubes - with and without target.
     params: p, cube, m8, cov, target
@@ -41,9 +41,9 @@ def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, 
 
         plt.figure(1)
         plt.plot(plot_mf_wt[1][1:], plot_mf_wt[0],plot_mf_nt[1][1:], plot_mf_nt[0], '--')
-        plt.title('MF - histogram results')
+        plt.title(f'MF - histogram results for {plot_header}')
         plt.grid()
-        plt.legend(['with target','without target'])
+        plt.legend([f'with target for {plot_header}',f'without target for {plot_header}'])
 
         inv_cumulative_probability_wt = np.zeros(shape=(bins,1))
         inv_cumulative_probability_nt = np.zeros(shape=(bins,1))
@@ -55,19 +55,18 @@ def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, 
 
         plt.figure(2)
         plt.plot(x, inv_cumulative_probability_wt,x, inv_cumulative_probability_nt)
-        plt.title('MF - inverse cumulative probability ')
+        plt.title(f'MF - inverse cumulative probability for {plot_header}')
         plt.grid()
-        plt.legend(['WT', 'NT'])
+        plt.legend([f'WT - {plot_header}', f'NT - {plot_header}'])
 
         plt.figure(3)
         plt.plot(inv_cumulative_probability_nt, inv_cumulative_probability_wt)
         plt.xlim([0,0.01])
-        plt.title('MF - ROC curve with limited pfa')
+        plt.title(f'MF - ROC curve with limited pfa for {plot_header}')
         plt.xlabel('Pfa')
         plt.ylabel('Pd')
         plt.grid()
 
-    plt.show()
 
     return mt_no_target_cube, mf_target_cube
 

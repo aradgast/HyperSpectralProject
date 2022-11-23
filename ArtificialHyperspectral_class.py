@@ -39,16 +39,18 @@ class ArtificialHyperspectralCube:
         self.cov = np.cov(self.matrix_z)
         self.m8 = m8(z)
         self.nu = find_nu(z, self.m8, self.cov)
+        self.data -= self.m8
 
     def create_z_cube(self, nu_vec):
         self.data = np.zeros(shape=(self.rowNum, self.colNum, self.bandsNum))
         for band in range(self.bandsNum):
             self.data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rowNum, self.colNum))
-            self.data[:, :, band] *= 1 / np.sqrt(np.var(self.data[:, :, band]))
+            self.data[:, :, band] *= 1 / np.std(self.data[:, :, band])
 
 
 
 if __name__ == "__main__":
+
     z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
     plt.plot([i for i in range(len(z.nu))], z.nu)
     plt.plot([i for i in range(len(z.m8))], z.m8)
