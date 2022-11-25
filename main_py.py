@@ -9,7 +9,9 @@ from MF import matched_filter
 from ArtificialHyperspectral_class import ArtificialHyperspectralCube
 
 if __name__ == "__main__":
+
     z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
+
     z_mt_no_target_cube, z_mf_target_cube = matched_filter(0.065, z.data, z.m8, z.cov, (5,3), True, 'Z')
     x_mt_no_target_cube, x_mf_target_cube = matched_filter(0.065, z.original_data, z.m8original_data, z.cov_original_data, (5,3), True, 'X')
     y_mt_no_target_cube, y_mf_target_cube = matched_filter(0.065, z.y_cube, z.m8y_cube, z.cov_y_cube, (5,3), True, 'Y')

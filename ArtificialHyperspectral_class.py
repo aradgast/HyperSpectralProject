@@ -16,8 +16,8 @@ class ArtificialHyperspectralCube:
         original_data_pca = spy.algorithms.principal_components(self.original_data)
         # eigD = original_data_pca.eigenvalues  # values are OK but on reverse order
         # eigV = original_data_pca.eigenvectors  # because eigenvalues on reverse order so as the vectors
-        self.m8original_data = m8(original_data_np)
-        self.cov_original_data = original_data_pca.cov
+        self.m8original_data = np.array(m8(original_data_np))
+        self.cov_original_data = np.array(original_data_pca.cov)
 
         # Y cube ############
 
@@ -30,23 +30,23 @@ class ArtificialHyperspectralCube:
         matrix_y = np.transpose(y_cube_np.reshape(self.rowNum * self.colNum, self.bandsNum))
         self.cov_y_cube = np.cov(matrix_y)
 
-        nu_original_data = find_nu(self.original_data, self.m8original_data, self.cov_original_data)
-        nu_y_cube = find_nu(self.y_cube, self.m8y_cube, self.cov_y_cube)
+        nu_original_data = find_nu(original_data_np, self.m8original_data, self.cov_original_data, False)
+        nu_y_cube = find_nu(y_cube_np, self.m8y_cube, self.cov_y_cube, True)
 
         # Z cube ############
         self.create_z_cube(nu_y_cube)
         self.matrix_z = np.transpose(self.data.reshape(self.rowNum * self.colNum, self.bandsNum))
         self.cov = np.cov(self.matrix_z)
-        self.m8 = m8(z)
-        self.nu = find_nu(z, self.m8, self.cov)
+        self.m8 = np.array(m8(self.data))
         self.data -= self.m8
+        self.nu = find_nu(self.data, self.m8, self.cov, False)
 
     def create_z_cube(self, nu_vec):
         self.data = np.zeros(shape=(self.rowNum, self.colNum, self.bandsNum))
         for band in range(self.bandsNum):
             self.data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rowNum, self.colNum))
             self.data[:, :, band] *= 1 / np.std(self.data[:, :, band])
-
+        self.data = np.array(self.data)
 
 
 if __name__ == "__main__":
