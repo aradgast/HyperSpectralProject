@@ -9,7 +9,7 @@ from MF import matched_filter
 from ArtificialHyperspectral_class import ArtificialHyperspectralCube
 
 if __name__ == "__main__":
-
+    #take this one
     z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
 
     z_axis, hist_z_mf_wt, hist_z_mf_nt, z_inv_cumulative_wt,z_inv_cumulative_nt  = matched_filter(0.065, z.data, z.m8, z.cov, (5,3), True, 'Z')
