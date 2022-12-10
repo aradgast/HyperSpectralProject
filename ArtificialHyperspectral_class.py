@@ -3,6 +3,7 @@ from find_nu import find_nu
 from m8 import m8
 import spectral as spy
 import matplotlib.pyplot as plt
+from pca import pca
 
 
 class ArtificialHyperspectralCube:
@@ -16,28 +17,18 @@ class ArtificialHyperspectralCube:
         self.x_np = np.array(original_data.open_memmap())  # for working with numpy
 
         self.rowNum, self.colNum, self.bandsNum = original_data.shape
-        original_data_pca = spy.algorithms.principal_components(original_data)
-        # eigD = original_data_pca.eigenvalues  # values are OK but on reverse order
-        # eigV = original_data_pca.eigenvectors  # because eigenvalues on reverse order so as the vectors
+
+        # PCA
+        self.y_np, self.cov_x, self.cov_y = pca(self.x_np)
+
         self.m8x = m8(self.x_np)
-        self.cov_x = np.array(original_data_pca.cov)
-
-        # Y cube ############
-
-        y_cube = original_data_pca.transform(original_data)
-        self.y_np = np.array(y_cube.image.open_memmap().copy())
         self.m8y = m8(self.y_np)
-        for band in range(self.bandsNum):
-            self.y_np[:, :, band] *= 1 / np.sqrt(np.var(self.y_np[:, :, band]))
 
-        matrix_y = np.transpose(self.y_np.reshape(self.rowNum * self.colNum, self.bandsNum))
-        self.cov_y = np.cov(matrix_y)
-
-        nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
-        nu_y = find_nu(self.y_np, self.m8y, self.cov_y, True)
+        self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
+        self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, True)
 
         # Z cube ############
-        self.create_z_cube(nu_y)
+        self.create_z_cube(self.nu_y)
         self.matrix_z = np.transpose(self.data.reshape(self.rowNum * self.colNum, self.bandsNum))
         self.cov = np.cov(self.matrix_z)
         self.m8 = np.array(m8(self.data))
