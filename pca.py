@@ -7,6 +7,7 @@ from cov_m8 import cov_m8
 def pca(cube):
     # get the shape of the cube
     row, col, bands = cube.shape
+
     # calculate the covariance matrix
     cov = cov_m8(cube)
     # calculate the eigenvalues and eigenvectors
@@ -15,7 +16,7 @@ def pca(cube):
     idx = np.argsort(eigval)[::-1]
     eigval = eigval[idx]
     eigvec = eigvec[:, idx]
-    eigvec = np.multiply(eigvec, np.sqrt(eigval) ** (-1))
+    # eigvec = np.multiply(eigvec, np.sqrt(eigval) ** (-1))
     # project the data
     cube = np.dot(eigvec.T, cube.reshape((row * col, bands)).T).reshape((row, col, bands))
     # update the covariance matrix

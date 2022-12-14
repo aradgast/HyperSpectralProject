@@ -4,7 +4,7 @@ from m8 import m8
 import spectral as spy
 import matplotlib.pyplot as plt
 from pca import pca
-
+from cov_m8 import cov_m8
 
 class ArtificialHyperspectralCube:
     """ x refers to the original data
@@ -15,31 +15,38 @@ class ArtificialHyperspectralCube:
         self.data = np.ndarray(0)
         original_data = spy.open_image(header)
         self.x_np = np.array(original_data.open_memmap())  # for working with numpy
-
         self.rowNum, self.colNum, self.bandsNum = original_data.shape
-
+        plt.hist(self.x_np[:, :, 0].flatten(), bins=100)
+        plt.show()
         # PCA
         self.y_np, self.cov_x, self.cov_y = pca(self.x_np)
+        plt.imshow(self.cov_y)
+        plt.colorbar()
+        plt.show()
+        plt.hist(self.y_np[:, :, 0].flatten(), bins=100)
+        plt.xlim(-10, 10)
+        plt.show()
+
 
         self.m8x = m8(self.x_np)
         self.m8y = m8(self.y_np)
 
         self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
-        self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, True)
+        self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
 
         # Z cube ############
-        self.create_z_cube(self.nu_y)
-        self.matrix_z = np.transpose(self.data.reshape(self.rowNum * self.colNum, self.bandsNum))
-        self.cov = np.cov(self.matrix_z)
+        self._create_z_cube(self.nu_y)
+        self.cov = cov_m8(self.data)
         self.m8 = np.array(m8(self.data))
         self.data -= self.m8
         self.nu = find_nu(self.data, self.m8, self.cov, False)
 
-    def create_z_cube(self, nu_vec):
+    def _create_z_cube(self, nu_vec):
         self.data = np.zeros(shape=(self.rowNum, self.colNum, self.bandsNum))
         for band in range(self.bandsNum):
             self.data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rowNum, self.colNum))
-            self.data[:, :, band] *= 1 / np.std(self.data[:, :, band])
+            self.data[:, :, band] /= self.data[:, :, band].std()
+
         self.data = np.array(self.data)
 
 

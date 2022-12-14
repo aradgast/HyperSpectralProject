@@ -8,7 +8,7 @@ def cov_m8(cube):
 
 
 if __name__ == "__main__":
-    # write an easy test for cov_m8 using random data
+
     a = np.random.rand(10, 15, 5)
     print(cov_m8(a).shape)
 
