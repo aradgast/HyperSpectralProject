@@ -1,30 +1,23 @@
-'''this function will preform PCA on the cube and return the transformed cube'''
 import numpy as np
-from m8 import m8
-from cov_m8 import cov_m8
 
 
-def pca(cube):
+def pca(data, mean, cov):
+    """ calculate the PCA of the data cube"""
+
     # get the shape of the cube
-    row, col, bands = cube.shape
+    row, col, bands = data.shape
+    data -= mean
 
-    # calculate the covariance matrix
-    cov = cov_m8(cube)
-    # calculate the eigenvalues and eigenvectors
     eigval, eigvec = np.linalg.eig(cov)
     # sort the eigenvalues and eigenvectors
     idx = np.argsort(eigval)[::-1]
     eigval = eigval[idx]
     eigvec = eigvec[:, idx]
-    # eigvec = np.multiply(eigvec, np.sqrt(eigval) ** (-1))
     # project the data
-    cube = np.dot(eigvec.T, cube.reshape((row * col, bands)).T).reshape((row, col, bands))
+    cube = np.dot(eigvec.T, data.reshape((row * col, bands)).T).reshape((row, col, bands))
     # update the covariance matrix
-    cov_new = cov_m8(cube)
-    # reshape the data back to the original shape
-    cube = cube.reshape(row, col, bands)
 
-    return cube, cov, cov_new
+    return cube
 
 
 if __name__ == "__main__":
@@ -45,3 +38,5 @@ if __name__ == "__main__":
     plt.imshow(cov2)
     plt.colorbar()
     plt.show()
+
+    pass

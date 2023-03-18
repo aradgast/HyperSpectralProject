@@ -1,35 +1,29 @@
 import numpy as np
+from scipy.ndimage import generic_filter
 from find_nu import find_nu
 from m8 import m8
-import spectral as spy
+from spectral import *
 import matplotlib.pyplot as plt
 from pca import pca
 from cov_m8 import cov_m8
+
+from local_meanNcovariance import local_mean_covariance
+
 
 class ArtificialHyperspectralCube:
     """ x refers to the original data
     y refers to the transformed data(PCA)"""
 
     def __init__(self, header):
+        self.data = open_image(header)
+        self.cube = self.data.load()
+        self.rows, self.cols, self.bands = self.data.shape
 
-        self.data = np.ndarray(0)
-        original_data = spy.open_image(header)
-        self.x_np = np.array(original_data.open_memmap())  # for working with numpy
-        self.rowNum, self.colNum, self.bandsNum = original_data.shape
-        plt.hist(self.x_np[:, :, 0].flatten(), bins=100)
-        plt.show()
-        # PCA
-        self.y_np, self.cov_x, self.cov_y = pca(self.x_np)
-        plt.imshow(self.cov_y)
-        plt.colorbar()
-        plt.show()
-        plt.hist(self.y_np[:, :, 0].flatten(), bins=100)
-        plt.xlim(-10, 10)
-        plt.show()
+        self.x_mean, self.x_cov = local_mean_covariance(self.cube)
 
+        self.y = pca(self.cube, self.x_mean, self.x_cov)
 
-        self.m8x = m8(self.x_np)
-        self.m8y = m8(self.y_np)
+        self.y_mean, self.y_cov = local_mean_covariance(self.y)
 
         self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
         self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
@@ -51,11 +45,9 @@ class ArtificialHyperspectralCube:
 
 
 if __name__ == "__main__":
-
     z = ArtificialHyperspectralCube('D1_F12_H2_Cropped_des_Aligned.hdr')
     plt.plot([i for i in range(len(z.nu))], z.nu)
     plt.plot([i for i in range(len(z.m8))], z.m8)
     plt.show()
-
 
     pass
