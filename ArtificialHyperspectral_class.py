@@ -1,47 +1,66 @@
 import numpy as np
 from scipy.ndimage import generic_filter
 from find_nu import find_nu
-from m8 import m8
+from local_mean_covariance import m8, cov8
 from spectral import *
 import matplotlib.pyplot as plt
 from pca import pca
-from cov_m8 import cov_m8
 
-from local_meanNcovariance import local_mean_covariance
 
 
 class ArtificialHyperspectralCube:
-    """ x refers to the original data
-    y refers to the transformed data(PCA)"""
+    """ this class initalize an artifcial hyperspectral cube according to the original data that was given by the
+     header file.
+
+     the class contains the following attributes:
+     data - the original data
+     cube - the original data in a 3D array
+     rows - the number of rows in the original data
+     cols - the number of columns in the original data
+     bands - the number of bands in the original data
+     x_mean - the local mean of the original data
+     x_cov - the local covariance of the original data
+     y - the PCA of the original data
+     y_mean - the local mean of the PCA
+     y_cov - the local covariance of the PCA
+     nu_x - the estimation of df(degree of freedom) for the original data
+     nu_y - the estimation of df(degree of freedom) for the PCA dataset
+     z - the artificial hyperspectral cube
+     cov - the local covariance of the artificial hyperspectral cube
+     m8 - the local mean of the artificial hyperspectral cube
+     nu - the estimation of df(degree of freedom) for the artificial hyperspectral cube
+
+     """
 
     def __init__(self, header):
         self.data = open_image(header)
         self.cube = self.data.load()
         self.rows, self.cols, self.bands = self.data.shape
 
-        self.x_mean, self.x_cov = local_mean_covariance(self.cube)
+        self.x_mean = m8(self.cube)
+        self.x_cov = cov8(self.cube, self.x_mean)
 
         self.y = pca(self.cube, self.x_mean, self.x_cov)
 
-        self.y_mean, self.y_cov = local_mean_covariance(self.y)
+        self.y_mean = m8(self.y)
+        self.y_cov = cov8(self.y, self.y_mean)
 
-        self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
-        self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
+        # self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
+        # self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
 
         # Z cube ############
-        self._create_z_cube(self.nu_y)
-        self.cov = cov_m8(self.data)
-        self.m8 = np.array(m8(self.data))
-        self.data -= self.m8
-        self.nu = find_nu(self.data, self.m8, self.cov, False)
+        self.__create_z_cube([2 for i in range(self.bands)])
+        self.m8 = m8(self.artificial_data)
+        self.cov = cov8(self.artificial_data, self.m8)
+        # self.nu = find_nu(self.data, self.m8, self.cov, False)
 
-    def _create_z_cube(self, nu_vec):
-        self.data = np.zeros(shape=(self.rowNum, self.colNum, self.bandsNum))
-        for band in range(self.bandsNum):
-            self.data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rowNum, self.colNum))
-            self.data[:, :, band] /= self.data[:, :, band].std()
+    def __create_z_cube(self, nu_vec):
+        self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
+        for band in range(self.bands):
+            self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
+            self.artificial_data[:, :, band] /= self.artificial_data[:, :, band].std()
 
-        self.data = np.array(self.data)
+        self.artificial_data = np.array(self.artificial_data)
 
 
 if __name__ == "__main__":
