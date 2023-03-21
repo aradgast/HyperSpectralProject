@@ -1,6 +1,6 @@
 ############################################################################################################
 # All right reserved by BGU, 2023
-# Author: Arad Gast
+# Author: Arad Gast, Ido Levokovich
 # Date: 03/2023
 # Description: This code is for calculating the local mean and covariance matrix of a hyperspectral image
 #              The code is based on the course of "Hyperspectral Image Processing" by Prof. Stanly Rotman
