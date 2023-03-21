@@ -1,15 +1,20 @@
+########################################################################################################################
+# All right reserved by BGU, 2023
+# Author: Arad Gast, Ido Levokovich
+# Date: 03/2023
+# Description: this file contains the ArtificialHyperspectralCube class
+
+########################################################################################################################
+
 import numpy as np
-from scipy.ndimage import generic_filter
-from find_nu import find_nu
 from local_mean_covariance import m8, cov8
 from spectral import *
 import matplotlib.pyplot as plt
-from pca import pca
-
+from PCA import pca
 
 
 class ArtificialHyperspectralCube:
-    """ this class initalize an artifcial hyperspectral cube according to the original data that was given by the
+    """ this class initialize an artificial hyperspectral cube according to the original data that was given by the
      header file.
 
      the class contains the following attributes:
@@ -34,13 +39,13 @@ class ArtificialHyperspectralCube:
 
     def __init__(self, header):
         self.data = open_image(header)
-        self.cube = self.data.load()
-        self.rows, self.cols, self.bands = self.data.shape
+        self.cube = self.data.load(dtype='double').copy()
+        self.rows, self.cols, self.bands = self.cube.shape
 
         self.x_mean = m8(self.cube)
         self.x_cov = cov8(self.cube, self.x_mean)
 
-        self.y = pca(self.cube, self.x_mean, self.x_cov)
+        self.y, self.x_eigvec = pca(self.cube, self.x_mean, self.x_cov)
 
         self.y_mean = m8(self.y)
         self.y_cov = cov8(self.y, self.y_mean)
@@ -54,13 +59,26 @@ class ArtificialHyperspectralCube:
         self.cov = cov8(self.artificial_data, self.m8)
         # self.nu = find_nu(self.data, self.m8, self.cov, False)
 
+        # T cube ############
+        self.t, _ = pca(self.artificial_data, self.m8, self.cov)
+        self.t_mean = m8(self.t)
+        self.t_cov = cov8(self.t, self.t_mean)
+
+        # Q cube ############
+        self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='double')
+        for r in range(self.rows):
+            for c in range(self.cols):
+                self.q[r, c, :] = np.dot(self.x_eigvec, self.t[r, c, :])
+        self.q_mean = m8(self.q)
+        self.q_cov = cov8(self.q, self.q_mean)
+
     def __create_z_cube(self, nu_vec):
         self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
         for band in range(self.bands):
             self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
             self.artificial_data[:, :, band] /= self.artificial_data[:, :, band].std()
 
-        self.artificial_data = np.array(self.artificial_data)
+        self.artificial_data = np.array(self.artificial_data) + self.y_mean
 
 
 if __name__ == "__main__":

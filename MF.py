@@ -1,3 +1,11 @@
+#########################################################################################
+# All right reserved by BGU, 2023
+# Author: Arad Gast, Ido Levokovich
+# Date: 03/2023
+# Description: this file contains the MF function
+
+#########################################################################################
+
 import numpy as np
 import matplotlib.pyplot as plt
 
