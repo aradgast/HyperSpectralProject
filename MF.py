@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, target: tuple) \
+def matched_filter(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndarray, target: tuple) \
         -> (np.ndarray, np.ndarray):
     """this function implement the MF algorithm on 2 cubes - with and without target.
     params: p, cube, m8, cov, target
@@ -21,19 +21,20 @@ def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, 
     target: the index of the wanted target in the cube
     output: matrices after preforming MF - with and without target"""
     target_vec = cube[target[0], target[1]].reshape((1, 1, -1))
-    no_target_cube = cube - m8
+    no_target_cube = cube - m8_cube
     inv_cov = np.linalg.inv(cov)
 
     target_cube = no_target_cube.copy()
     target_cube = target_cube + p * target_vec
 
-    target_mul_inv_phi = np.matmul(target_vec, inv_cov).reshape((1,1,-1))
+    target_mul_inv_phi = np.matmul(target_vec, inv_cov).reshape((1, 1, -1))
     mf_no_target_cube = np.tensordot(no_target_cube, target_mul_inv_phi, axes=([2], [2])).squeeze()
     mf_target_cube = np.tensordot(target_cube, target_mul_inv_phi, axes=([2], [2])).squeeze()
 
-    return mf_target_cube, mf_no_target_cube
+    peak_dist = p * np.tensordot(target_vec, inv_cov, axes=([2], [0])).squeeze()
+    peak_dist = np.tensordot(peak_dist, np.transpose(target_vec, (2, 1, 0)), axes=([0], [2])).squeeze()
 
-
+    return mf_target_cube, mf_no_target_cube, peak_dist
 
 
 if __name__ == "__main__":
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     from local_mean_covariance import m8, cov8
     from plot_detection_algo import plot, calc_stats
     import matplotlib.pyplot as plt
+
     cube = np.random.random(size=(10, 15, 5))
     m8_cube = m8(cube)
     res = matched_filter(1, cube, m8_cube, cov8(cube, m8_cube), (0, 0))

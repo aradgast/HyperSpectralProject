@@ -70,7 +70,7 @@ def plot_stats(axis, hist_wt, hist_nt, fpr, tpr, legends=['Z'], algo_name='MF'):
             title2 += legends[i]
             ax[0, 1].grid()
             ax[0, 1].legend()
-        except RuntimeWarning as e:
+        except Exception as e:
             print(e)
 
         ax[1, 0].plot(tpr[i], label=f'{legends[i]}_WT', color=colors[i], linewidth=i+1)

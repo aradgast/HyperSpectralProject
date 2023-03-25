@@ -38,6 +38,7 @@ if __name__ == "__main__":
     m8_cube = m8(cube)
     cov8_cube = cov8(cube, m8_cube)
     res = matched_filter(0.065, cube, m8_cube, cov8_cube, (5, 3))
+    print(f"peak distance: {res[2]}")
     stats = calc_stats(res[0], res[1])
     plot_stats([stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
     print('done')
