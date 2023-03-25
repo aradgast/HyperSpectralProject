@@ -32,7 +32,7 @@ def matched_filter(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndar
     mf_target_cube = np.tensordot(target_cube, target_mul_inv_phi, axes=([2], [2])).squeeze()
 
     peak_dist = p * np.tensordot(target_vec, inv_cov, axes=([2], [0])).squeeze()
-    peak_dist = np.tensordot(peak_dist, np.transpose(target_vec, (2, 1, 0)), axes=([0], [2])).squeeze()
+    peak_dist = np.dot(peak_dist, target_vec.squeeze()).squeeze()
 
     return mf_target_cube, mf_no_target_cube, peak_dist
 

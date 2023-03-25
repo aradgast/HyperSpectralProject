@@ -7,38 +7,43 @@ import numpy as np
 
 if __name__ == "__main__":
     header = 'D1_F12_H1_Cropped.hdr'
-    # z = ArtificialHyperspectralCube(header)
-    #
-    # z_axis, hist_z_mf_wt, hist_z_mf_nt, z_inv_cumulative_wt, z_inv_cumulative_nt = matched_filter(0.065,
-    #                                                                                               z.artificial_data,
-    #                                                                                               z.m8, z.cov, (5, 3))
-    # x_axis, hist_x_mf_wt, hist_x_mf_nt, x_inv_cumulative_wt, x_inv_cumulative_nt = matched_filter(0.065, z.cube,
-    #                                                                                               z.x_mean, z.x_cov,
-    #                                                                                               (5, 3))
-    # y_axis, hist_y_mf_wt, hist_y_mf_nt, y_inv_cumulative_wt, y_inv_cumulative_nt = matched_filter(0.065, z.y, z.y_mean,
-    #                                                                                               z.y_cov, (5, 3))
-    # t_axis, hist_t_mf_wt, hist_t_mf_nt, t_inv_cumulative_wt, t_inv_cumulative_nt = matched_filter(0.065, z.t, z.t_mean,
-    #                                                                                               z.t_cov, (5, 3))
-    # q_axis, hist_q_mf_wt, hist_q_mf_nt, q_inv_cumulative_wt, q_inv_cumulative_nt = matched_filter(0.065, z.q, z.q_mean,
-    #                                                                                               z.q_cov, (5, 3))
+    z = ArtificialHyperspectralCube(header)
 
-    # axis = [x_axis, y_axis, z_axis, t_axis, q_axis]
-    # hist_mf_wt = [hist_x_mf_wt, hist_y_mf_wt, hist_z_mf_wt, hist_t_mf_wt, hist_q_mf_wt]
-    # hist_mf_nt = [hist_x_mf_nt, hist_y_mf_nt, hist_z_mf_nt, hist_t_mf_nt, hist_q_mf_nt]
-    # inv_cumulative_wt = [x_inv_cumulative_wt, y_inv_cumulative_wt, z_inv_cumulative_wt, t_inv_cumulative_wt,
-    #                      q_inv_cumulative_wt]
-    # inv_cumulative_nt = [x_inv_cumulative_nt, y_inv_cumulative_nt, z_inv_cumulative_nt, t_inv_cumulative_nt,
-    #                      q_inv_cumulative_nt]
-    # legends = ['X', 'Y', 'Z', 'T', 'Q']
-    # plot(axis, hist_mf_wt, hist_mf_nt, inv_cumulative_wt, inv_cumulative_nt, legends, algo_name='MF')
+    mf_res_z = matched_filter(0.065, z.artificial_data, z.m8, z.cov, (4, 2))
+    print(f"Z peak distance: {np.round(mf_res_z[2], 3)}")
 
+    mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, (4, 2))
+    print(f"X peak distance: {np.round(mf_res_x[2], 3)}")
 
-    data = spy.open_image(header)
-    cube = data.load(dtype='double').copy()
-    m8_cube = m8(cube)
-    cov8_cube = cov8(cube, m8_cube)
-    res = matched_filter(0.065, cube, m8_cube, cov8_cube, (5, 3))
-    print(f"peak distance: {res[2]}")
-    stats = calc_stats(res[0], res[1])
-    plot_stats([stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
+    mf_res_y = matched_filter(0.065, z.y, z.y_mean, z.y_cov, (4, 2))
+    print(f"Y peak distance: {np.round(mf_res_y[2], 3)}")
+
+    mf_res_t = matched_filter(0.065, z.t, z.t_mean, z.t_cov, (4, 2))
+    print(f"T peak distance: {np.round(mf_res_t[2], 3)}")
+
+    mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, (4, 2))
+    print(f"Q peak distance: {np.round(mf_res_q[2], 3)}")
+
+    stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+    stats_y = calc_stats(mf_res_y[0], mf_res_y[1])
+    stats_z = calc_stats(mf_res_z[0], mf_res_z[1])
+    stats_t = calc_stats(mf_res_t[0], mf_res_t[1])
+    stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+
+    plot_stats([stats_x[0], stats_y[0], stats_z[0], stats_t[0], stats_q[0]],
+               [stats_x[1], stats_y[1], stats_z[1], stats_t[1], stats_q[1]],
+               [stats_x[2], stats_y[2], stats_z[2], stats_t[2], stats_q[2]],
+               [stats_x[3], stats_y[3], stats_z[3], stats_t[3], stats_q[3]],
+               [stats_x[4], stats_y[4], stats_z[4], stats_t[4], stats_q[4]],
+               [stats_x[5], stats_y[5], stats_z[5], stats_t[5], stats_q[5]], ['X', 'Y', 'Z', 'T', 'Q'], 'MF')
+
+    # data = spy.open_image(header)
+    # cube = data.load(dtype='double').copy()
+    # m8_cube = m8(cube)
+    # cov8_cube = cov8(cube, m8_cube)
+    # res = matched_filter(0.065, cube, m8_cube, cov8_cube, (4, 2))
+    # print(f"peak distance: {np.round(res[2], 3)}")
+    # stats = calc_stats(res[0], res[1])
+    # plot_stats([stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
+
     print('done')

@@ -14,8 +14,8 @@ from PCA import pca
 
 
 class ArtificialHyperspectralCube:
-    """ this class initialize an artificial hyperspectral cube according to the original data that was given by the
-     header file.
+    """ this class initialize an artificial hyperspectral cube according to the original data
+    that was given by the header file.
 
      the class contains the following attributes:
      data - the original data
@@ -76,9 +76,37 @@ class ArtificialHyperspectralCube:
         self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
         for band in range(self.bands):
             self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
-            self.artificial_data[:, :, band] /= self.artificial_data[:, :, band].std()
+
+        self.m8 = m8(self.artificial_data)
+        self.cov = cov8(self.artificial_data, self.m8)
+
+        for band in range(self.bands):
+            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band])
+            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] * np.sqrt(self.y_cov[band, band])
 
         self.artificial_data = np.array(self.artificial_data) + self.y_mean
+
+    def save_cubes(self):
+        np.save('z.npy', self.artificial_data)
+        np.save('t.npy', self.t)
+        np.save('q.npy', self.q)
+        np.save('y.npy', self.y)
+        np.save('x.npy', self.cube)
+        np.save('x_mean.npy', self.x_mean)
+        np.save('x_cov.npy', self.x_cov)
+        np.save('y_mean.npy', self.y_mean)
+        np.save('y_cov.npy', self.y_cov)
+        np.save('t_mean.npy', self.t_mean)
+        np.save('t_cov.npy', self.t_cov)
+        np.save('q_mean.npy', self.q_mean)
+        np.save('q_cov.npy', self.q_cov)
+        np.save('x_eigvec.npy', self.x_eigvec)
+        np.save('m8.npy', self.m8)
+        np.save('cov.npy', self.cov)
+        # np.save('nu.npy', self.nu)
+        # np.save('nu_x.npy', self.nu_x)
+        # np.save('nu_y.npy', self.nu_y)
+
 
 
 if __name__ == "__main__":

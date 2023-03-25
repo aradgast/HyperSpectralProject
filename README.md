@@ -15,3 +15,12 @@ If we will manage to accomplish our main goal, we will expand the research by us
 
 Keywords: Hyperspectral image, Target detection, Artificial image, PCA, T-distribution, Statistical analysis, Detection algorithms
 
+# How to use this repository and create your own artificial image??
+
+## 1. Clone the repository
+## 2. Download the image you want to create an artificial image from and add to your local repository
+## 3. Create an instance of the class "ArtificialImage" and pass the image path to the constructor
+## 4. The __init__ function will create the artificial image. You can save the output by using save_cubes method.
+## 5. You can use the MF implementation of the target detection algorithm by using the function MF in the matched_filter.py file.
+## 6. You can plot the results by using the calc_stats and plot_results functions in the plot_detection_algo.py file.
+## note: you can use the main_py.py file as a refernce

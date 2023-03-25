@@ -1,5 +1,12 @@
+############################################################################################################
+# All right reserved by BGU, 2023
+# Author: Arad Gast, Ido Levokovich
+# Date: 03/2023
+# Description: This file contains the find_nu function
+
+#############################################################################################################
 import numpy as np
-import scipy.stats as stats
+from scipy.stats import ks_2samp
 
 
 def find_nu(cube, mean_matrix, cov, method):
@@ -35,7 +42,7 @@ def find_nu(cube, mean_matrix, cov, method):
 
         for band in range(cube.shape[2]):
             for sim in range(simulation):
-                test = stats.ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
+                test = ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
                 statiscis_result[sim] = test[0]
             nu[band] = nu_vec[np.argmin(statiscis_result)]
 

@@ -37,7 +37,7 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
     return x, histogram_wt, histogram_nt, fpr, tpr, thresholds
 
 
-def plot_stats(axis, hist_wt, hist_nt, fpr, tpr, legends=['Z'], algo_name='MF'):
+def plot_stats(axis, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF'):
     """this function plots the results of the detection algorithm
     axis - the axis of the cumulative probability
     hist_wt - the histogram of the WT
@@ -73,18 +73,20 @@ def plot_stats(axis, hist_wt, hist_nt, fpr, tpr, legends=['Z'], algo_name='MF'):
         except Exception as e:
             print(e)
 
-        ax[1, 0].plot(tpr[i], label=f'{legends[i]}_WT', color=colors[i], linewidth=i+1)
-        ax[1, 0].plot(fpr[i], '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=i+1)
+        ax[1, 0].plot(thresholds, tpr[i][::-1], label=f'{legends[i]}_WT', color=colors[i], linewidth=i+1)
+        ax[1, 0].plot(thresholds, fpr[i][::-1], '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=i+1)
         title3 += legends[i]
         ax[1, 0].grid()
         ax[1, 0].legend()
 
-        roc_auc = auc(fpr[i], tpr[i])
+        idx = len(fpr[fpr <= 0.01])
+        roc_auc = auc(fpr[:idx], tpr[:idx])
         ax[1, 1].plot(fpr[i], tpr[i],
                       label=f"{legends[i]}: AUC = {np.round(roc_auc,3)}", color=colors[i], linewidth=i+1)
         title4 += legends[i]
         ax[1, 1].set_xlabel('False Positive Rate')
         ax[1, 1].set_ylabel('True Positive Rate')
+        ax[1, 1].set_xlim([0, 0.01])
         ax[1, 1].grid()
         ax[1, 1].legend()
 

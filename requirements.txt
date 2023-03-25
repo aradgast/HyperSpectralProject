@@ -1,3 +1,4 @@
-matplotlib~=3.2.1
+matplotlib
 spectral~=0.22.4
-numpy~=1.21.6
+numpy
+scipy
