@@ -20,50 +20,30 @@ def matched_filter(p: float, cube: np.ndarray, m8: np.ndarray, cov: np.ndarray, 
     cov: the cube covariance
     target: the index of the wanted target in the cube
     output: matrices after preforming MF - with and without target"""
-    row_num, col_num, band_num = cube.shape
-    target_vec = cube[target[0], target[1]]
+    target_vec = cube[target[0], target[1]].reshape((1, 1, -1))
     no_target_cube = cube - m8
     inv_cov = np.linalg.inv(cov)
 
-    target_cube = np.zeros(shape=(row_num, col_num, band_num))
-    for row in range(row_num):
-        for col in range(col_num):
-            target_cube[row, col, :] += target_vec * p
-    target_cube += no_target_cube
+    target_cube = no_target_cube.copy()
+    target_cube = target_cube + p * target_vec
 
-    target_mul_inv_phi = np.matmul(target_vec, inv_cov)
-    mt_no_target_cube = np.zeros(shape=(row_num, col_num))
-    mf_target_cube = np.zeros(shape=(row_num, col_num))
-    for row in range(row_num):
-        for col in range(col_num):
-            mt_no_target_cube[row, col] = np.matmul(target_mul_inv_phi, no_target_cube[row, col, :])
-            mf_target_cube[row, col] = np.matmul(target_mul_inv_phi, target_cube[row, col, :])
+    target_mul_inv_phi = np.matmul(target_vec, inv_cov).reshape((1,1,-1))
+    mf_no_target_cube = np.tensordot(no_target_cube, target_mul_inv_phi, axes=([2], [2])).squeeze()
+    mf_target_cube = np.tensordot(target_cube, target_mul_inv_phi, axes=([2], [2])).squeeze()
 
-    bins = 1000
-    x = np.linspace(-1000, 1000, bins)
+    return mf_target_cube, mf_no_target_cube
 
-    plot_mf_wt = np.histogram(mf_target_cube, x)
-    plot_mf_nt = np.histogram(mt_no_target_cube, x)
 
-    inv_cumulative_probability_wt = np.zeros(shape=(bins, 1))
-    inv_cumulative_probability_nt = np.zeros(shape=(bins, 1))
-    for bin in range(bins):
-        inv_cumulative_probability_wt[bin] = np.sum(plot_mf_wt[0][bin:])
-        inv_cumulative_probability_nt[bin] = np.sum(plot_mf_nt[0][bin:])
-    inv_cumulative_probability_nt *= 1 / np.max(inv_cumulative_probability_nt)
-    inv_cumulative_probability_wt *= 1 / np.max(inv_cumulative_probability_wt)
-
-    return x, plot_mf_wt, plot_mf_nt, inv_cumulative_probability_wt, inv_cumulative_probability_nt
 
 
 if __name__ == "__main__":
     import spectral as spy
-    from local_mean_covariance import m8
-
-    # Example
-    img = spy.open_image('D1_F12_H2_Cropped_des_Aligned.hdr')
-    img_np = np.array(img.open_memmap().copy())  # for working with numpy
-    phi = np.cov(np.transpose(img_np.reshape(img_np.shape[0] * img_np.shape[1], img_np.shape[2])))
-    no_target_x, target_y = matched_filter(0.065, img_np, m8(img_np), phi, (5, 3), True)
-    plt.show()
-    pass
+    from local_mean_covariance import m8, cov8
+    from plot_detection_algo import plot, calc_stats
+    import matplotlib.pyplot as plt
+    cube = np.random.random(size=(10, 15, 5))
+    m8_cube = m8(cube)
+    res = matched_filter(1, cube, m8_cube, cov8(cube, m8_cube), (0, 0))
+    stats = calc_stats(res[0], res[1], bins=10)
+    plot([stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
+    print("done")

@@ -45,7 +45,7 @@ def m8(cube):
     return m8cube
 
 
-def cov8(cube, m8):
+def cov8(cube, m8_cube):
     """this function calculate the covariance matrix of the cube using the 8 neighbors average
     :param cube: the cube of the image
     :param m8: the 8 neighbors average cube
@@ -55,7 +55,7 @@ def cov8(cube, m8):
     cov = np.zeros(shape=(bands, bands))
     for r in range(rows):
         for c in range(cols):
-            x1 = (cube[r, c, :] - m8[r, c, :]).reshape((-1, 1))
+            x1 = (cube[r, c, :] - m8_cube[r, c, :]).reshape((-1, 1))
             cov += np.matmul(x1, np.transpose(x1))
     return cov / (rows * cols)
 
