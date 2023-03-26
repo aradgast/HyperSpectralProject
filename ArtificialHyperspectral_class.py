@@ -37,40 +37,44 @@ class ArtificialHyperspectralCube:
 
      """
 
-    def __init__(self, header):
-        self.data = open_image(header)
-        self.cube = self.data.load(dtype='double').copy()
-        self.rows, self.cols, self.bands = self.cube.shape
+    def __init__(self, header, is_load=False):
+        """ this function initialize the class"""
+        if is_load is False:
+            self.data = open_image(header)
+            self.cube = self.data.load(dtype='double').copy()
+            self.rows, self.cols, self.bands = self.cube.shape
 
-        self.x_mean = m8(self.cube)
-        self.x_cov = cov8(self.cube, self.x_mean)
+            self.x_mean = m8(self.cube)
+            self.x_cov = cov8(self.cube, self.x_mean)
 
-        self.y, self.x_eigvec = pca(self.cube, self.x_mean, self.x_cov)
+            self.y, self.x_eigvec = pca(self.cube, self.x_mean, self.x_cov)
 
-        self.y_mean = m8(self.y)
-        self.y_cov = cov8(self.y, self.y_mean)
+            self.y_mean = m8(self.y)
+            self.y_cov = cov8(self.y, self.y_mean)
 
-        # self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
-        # self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
+            # self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
+            # self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
 
-        # Z cube ############
-        self.__create_z_cube([2 for i in range(self.bands)])
-        self.m8 = m8(self.artificial_data)
-        self.cov = cov8(self.artificial_data, self.m8)
-        # self.nu = find_nu(self.data, self.m8, self.cov, False)
+            # Z cube ############
+            self.__create_z_cube([2 for i in range(self.bands)])
+            self.m8 = m8(self.artificial_data)
+            self.cov = cov8(self.artificial_data, self.m8)
+            # self.nu = find_nu(self.data, self.m8, self.cov, False)
 
-        # T cube ############
-        self.t, _ = pca(self.artificial_data, self.m8, self.cov)
-        self.t_mean = m8(self.t)
-        self.t_cov = cov8(self.t, self.t_mean)
+            # T cube ############
+            self.t, _ = pca(self.artificial_data, self.m8, self.cov)
+            self.t_mean = m8(self.t)
+            self.t_cov = cov8(self.t, self.t_mean)
 
-        # Q cube ############
-        self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='double')
-        for r in range(self.rows):
-            for c in range(self.cols):
-                self.q[r, c, :] = np.dot(self.x_eigvec, self.t[r, c, :])
-        self.q_mean = m8(self.q)
-        self.q_cov = cov8(self.q, self.q_mean)
+            # Q cube ############
+            self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='double')
+            for r in range(self.rows):
+                for c in range(self.cols):
+                    self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
+            self.q_mean = m8(self.q)
+            self.q_cov = cov8(self.q, self.q_mean)
+        else:
+            self.load_params()
 
     def __create_z_cube(self, nu_vec):
         self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
@@ -86,7 +90,7 @@ class ArtificialHyperspectralCube:
 
         self.artificial_data = np.array(self.artificial_data) + self.y_mean
 
-    def save_cubes(self):
+    def save_params(self):
         np.save('z.npy', self.artificial_data)
         np.save('t.npy', self.t)
         np.save('q.npy', self.q)
@@ -107,6 +111,26 @@ class ArtificialHyperspectralCube:
         # np.save('nu_x.npy', self.nu_x)
         # np.save('nu_y.npy', self.nu_y)
 
+    def load_params(self):
+        self.artificial_data = np.load('z.npy')
+        self.t = np.load('t.npy')
+        self.q = np.load('q.npy')
+        self.y = np.load('y.npy')
+        self.cube = np.load('x.npy')
+        self.x_mean = np.load('x_mean.npy')
+        self.x_cov = np.load('x_cov.npy')
+        self.y_mean = np.load('y_mean.npy')
+        self.y_cov = np.load('y_cov.npy')
+        self.t_mean = np.load('t_mean.npy')
+        self.t_cov = np.load('t_cov.npy')
+        self.q_mean = np.load('q_mean.npy')
+        self.q_cov = np.load('q_cov.npy')
+        self.x_eigvec = np.load('x_eigvec.npy')
+        self.m8 = np.load('m8.npy')
+        self.cov = np.load('cov.npy')
+        # self.nu = np.load('nu.npy')
+        # self.nu_x = np.load('nu_x.npy')
+        # self.nu_y = np.load('nu_y.npy')
 
 
 if __name__ == "__main__":
