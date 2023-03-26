@@ -7,6 +7,7 @@
 ########################################################################################################################
 
 import numpy as np
+from scipy.stats import t as t_dist
 from local_mean_covariance import m8, cov8
 from spectral import *
 import matplotlib.pyplot as plt
@@ -78,9 +79,13 @@ class ArtificialHyperspectralCube:
 
     def __create_z_cube(self, nu_vec):
         self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
+        self.stats_vec = []
         for band in range(self.bands):
-            self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
-
+            stats = t_dist.fit(self.y[:, :, band].flatten())
+            self.stats_vec.append(stats)
+            self.artificial_data[:, :, band] = t_dist.rvs(stats[0], loc=stats[1], scale=stats[2], size=(self.rows, self.cols))
+            # self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
+            # self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], size=(self.rows, self.cols))
         self.m8 = m8(self.artificial_data)
         self.cov = cov8(self.artificial_data, self.m8)
 
@@ -110,6 +115,7 @@ class ArtificialHyperspectralCube:
         # np.save('nu.npy', self.nu)
         # np.save('nu_x.npy', self.nu_x)
         # np.save('nu_y.npy', self.nu_y)
+        np.save('stats_vec.npy', self.stats_vec)
 
     def load_params(self):
         self.artificial_data = np.load('z.npy')
@@ -131,6 +137,7 @@ class ArtificialHyperspectralCube:
         # self.nu = np.load('nu.npy')
         # self.nu_x = np.load('nu_x.npy')
         # self.nu_y = np.load('nu_y.npy')
+        self.stats_vec = np.load('stats_vec.npy')
 
 
 if __name__ == "__main__":

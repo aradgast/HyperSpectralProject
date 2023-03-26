@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def matched_filter(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndarray, target: tuple) \
+def matched_filter(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndarray, target_vec: np.ndarray) \
         -> (np.ndarray, np.ndarray):
     """this function implement the MF algorithm on 2 cubes - with and without target.
     params: p, cube, m8, cov, target
@@ -20,7 +20,6 @@ def matched_filter(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndar
     cov: the cube covariance
     target: the index of the wanted target in the cube
     output: matrices after preforming MF - with and without target"""
-    target_vec = cube[target[0], target[1]].reshape((1, 1, -1))
     no_target_cube = cube - m8_cube
     inv_cov = np.linalg.inv(cov)
 
