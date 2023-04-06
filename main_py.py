@@ -1,4 +1,4 @@
-from MF import matched_filter
+from detection_algo import matched_filter
 from ArtificialHyperspectral_class import ArtificialHyperspectralCube
 from plot_detection_algo import plot_stats, calc_stats
 import spectral as spy
