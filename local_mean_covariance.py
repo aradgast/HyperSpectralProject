@@ -17,7 +17,7 @@ def m8(cube):
     :return: the 8 neighbors average cube in this shape"""
 
     row_num, col_num, band_num = cube.shape
-    m8cube = np.zeros(shape=(row_num, col_num, band_num), dtype=np.double)
+    m8cube = np.zeros(shape=(row_num, col_num, band_num), dtype=np.single)
 
     m8cube[1:row_num-1, 1:col_num-1] = (cube[1:row_num-1, 2:col_num] + cube[1:row_num-1, 0:col_num-2] +
                                         cube[2:row_num, 1:col_num-1] + cube[0:row_num-2, 1:col_num-1] +
@@ -52,12 +52,12 @@ def cov8(cube, m8_cube):
     :return: the covariance matrix of the cube"""
 
     rows, cols, bands = cube.shape
-    cov = np.zeros(shape=(bands, bands))
+    cov = np.zeros(shape=(bands, bands), dtype=np.single)
     for r in range(rows):
         for c in range(cols):
             x1 = (cube[r, c, :] - m8_cube[r, c, :]).reshape((-1, 1))
-            cov += np.matmul(x1, np.transpose(x1))
-    return cov / (rows * cols)
+            cov += np.matmul(x1, np.transpose(x1)) / (rows * cols)
+    return cov
 
 if __name__ == "__main__":
     import spectral as spy

@@ -18,17 +18,17 @@ def pca(data, mean, cov):
 
     # get the shape of the cube
     row, col, bands = data.shape
-    cube = np.zeros(shape=(row, col, bands), dtype='double')
+    cube = np.zeros(shape=(row, col, bands), dtype='single')
     # data -= mean
 
     eigval, eigvec = np.linalg.eig(cov)
 
-    scale_eigvec = np.matmul(np.linalg.inv(np.diag(np.sqrt(eigval))), eigvec.T, dtype='double')
+    scale_eigvec = np.matmul(np.linalg.inv(np.diag(np.sqrt(eigval))), eigvec.T, dtype='single')
 
     # project the data
     for r in range(row):
         for c in range(col):
-            cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype='double')
+            cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype='single')
 
     return cube, eigvec
 

@@ -38,11 +38,13 @@ class ArtificialHyperspectralCube:
 
      """
 
-    def __init__(self, header, is_load=False):
+    def __init__(self, header, is_load=False, name=None, nu_method='Constant'):
         """ this function initialize the class"""
+        self.name = name
+        self.nu_method = nu_method
         if is_load is False:
             self.data = open_image(header)
-            self.cube = self.data.load(dtype='double').copy()
+            self.cube = self.data.load(dtype='single').copy()
             self.rows, self.cols, self.bands = self.cube.shape
 
             self.x_mean = m8(self.cube)
@@ -68,76 +70,105 @@ class ArtificialHyperspectralCube:
             self.t_cov = cov8(self.t, self.t_mean)
 
             # Q cube ############
-            self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='double')
+            self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='single')
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
             self.q_mean = m8(self.q)
             self.q_cov = cov8(self.q, self.q_mean)
+            self.save_params()
         else:
             self.load_params()
 
     def __create_z_cube(self, nu_vec):
-        self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands))
+        self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='single')
         self.stats_vec = []
         for band in range(self.bands):
-            stats = t_dist.fit(self.y[:, :, band].flatten())
-            self.stats_vec.append(stats)
-            self.artificial_data[:, :, band] = t_dist.rvs(stats[0], loc=stats[1], scale=stats[2], size=(self.rows, self.cols))
-            # self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols))
-            # self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], size=(self.rows, self.cols))
+            # stats = t_dist.fit(self.y[:, :, band].flatten())
+            # self.stats_vec.append(stats)
+            # self.artificial_data[:, :, band] = t_dist.rvs(stats[0], loc=stats[1], scale=stats[2], size=(self.rows, self.cols))
+            # self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols), dtype='float16')
+            self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], loc=0, scale=1, size=(self.rows, self.cols))
         self.m8 = m8(self.artificial_data)
         self.cov = cov8(self.artificial_data, self.m8)
 
         for band in range(self.bands):
-            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band])
-            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] * np.sqrt(self.y_cov[band, band])
+            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band],
+                                                                                          dtype='single')
+            self.artificial_data[:, :, band] = self.artificial_data[:, :, band] * np.sqrt(self.y_cov[band, band],
+                                                                                          dtype='single')
 
         self.artificial_data = np.array(self.artificial_data) + self.y_mean
 
     def save_params(self):
-        np.save('z.npy', self.artificial_data)
-        np.save('t.npy', self.t)
-        np.save('q.npy', self.q)
-        np.save('y.npy', self.y)
-        np.save('x.npy', self.cube)
-        np.save('x_mean.npy', self.x_mean)
-        np.save('x_cov.npy', self.x_cov)
-        np.save('y_mean.npy', self.y_mean)
-        np.save('y_cov.npy', self.y_cov)
-        np.save('t_mean.npy', self.t_mean)
-        np.save('t_cov.npy', self.t_cov)
-        np.save('q_mean.npy', self.q_mean)
-        np.save('q_cov.npy', self.q_cov)
-        np.save('x_eigvec.npy', self.x_eigvec)
-        np.save('m8.npy', self.m8)
-        np.save('cov.npy', self.cov)
-        # np.save('nu.npy', self.nu)
-        # np.save('nu_x.npy', self.nu_x)
-        # np.save('nu_y.npy', self.nu_y)
-        np.save('stats_vec.npy', self.stats_vec)
+        """ this function save the parameters of the class in a file"""
+        if self.name is not None:
+            add = self.name
+        else:
+            add = ''
+        np.save('numpy_saved/x' + add + '.npy', self.cube)
+        np.save('numpy_saved/x_mean' + add + '.npy', self.x_mean)
+        np.save('numpy_saved/x_cov' + add + '.npy', self.x_cov)
+        np.save('numpy_saved/x_eigvec' + add + '.npy', self.x_eigvec)
+        # np.save('numpy_saved/x_nu' + add + '.npy', self.nu_x)
+
+        np.save('numpy_saved/y' + add + '.npy', self.q)
+        np.save('numpy_saved/y_mean' + add + '.npy', self.q_mean)
+        np.save('numpy_saved/y_cov' + add + '.npy', self.q_cov)
+        # np.save('y_nu' + add + '.npy', self.nu_y)
+
+        np.save('numpy_saved/t' + add + '.npy', self.t)
+        np.save('numpy_saved/t_mean' + add + '.npy', self.t_mean)
+        np.save('numpy_saved/t_cov' + add + '.npy', self.t_cov)
+        # np.save('numpy_saved/t_nu' + add + '.npy', self.nu_t)
+
+        np.save('numpy_saved/q' + add + '.npy', self.q)
+        np.save('numpy_saved/q_mean' + add + '.npy', self.q_mean)
+        np.save('numpy_saved/q_cov' + add + '.npy', self.q_cov)
+        # np.save('q_nu' + add + '.npy', self.nu_q)
+
+        np.save('numpy_saved/z' + add + '.npy', self.artificial_data)
+        np.save('numpy_saved/z_mean' + add + '.npy', self.m8)
+        np.save('numpy_saved/z_cov' + add + '.npy', self.cov)
+        # np.save('numpy_saved/z_nu' + add + '.npy', self.nu)
+
+        # np.save('numpy_saved/stats_vec' + add + '.npy', self.stats_vec)
 
     def load_params(self):
-        self.artificial_data = np.load('z.npy')
-        self.t = np.load('t.npy')
-        self.q = np.load('q.npy')
-        self.y = np.load('y.npy')
-        self.cube = np.load('x.npy')
-        self.x_mean = np.load('x_mean.npy')
-        self.x_cov = np.load('x_cov.npy')
-        self.y_mean = np.load('y_mean.npy')
-        self.y_cov = np.load('y_cov.npy')
-        self.t_mean = np.load('t_mean.npy')
-        self.t_cov = np.load('t_cov.npy')
-        self.q_mean = np.load('q_mean.npy')
-        self.q_cov = np.load('q_cov.npy')
-        self.x_eigvec = np.load('x_eigvec.npy')
-        self.m8 = np.load('m8.npy')
-        self.cov = np.load('cov.npy')
-        # self.nu = np.load('nu.npy')
-        # self.nu_x = np.load('nu_x.npy')
-        # self.nu_y = np.load('nu_y.npy')
-        self.stats_vec = np.load('stats_vec.npy')
+        """ This function load the parameters from the file"""
+
+        if self.name is not None:
+            add = self.name
+        else:
+            add = ''
+
+        self.cube = np.load('numpy_saved/x' + add + '.npy')
+        self.x_mean = np.load('numpy_saved/x_mean' + add + '.npy')
+        self.x_cov = np.load('numpy_saved/x_cov' + add + '.npy')
+        self.x_eigvec = np.load('numpy_saved/x_eigvec' + add + '.npy')
+        # self.nu_x = np.load('numpy_saved/x_nu' + add + '.npy')
+
+        self.y = np.load('numpy_saved/y' + add + '.npy')
+        self.y_mean = np.load('numpy_saved/y_mean' + add + '.npy')
+        self.y_cov = np.load('numpy_saved/y_cov' + add + '.npy')
+        # self.nu_y = np.load('numpy_saved/y_nu' + add + '.npy')
+
+        self.t = np.load('numpy_saved/t' + add + '.npy')
+        self.t_mean = np.load('numpy_saved/t_mean' + add + '.npy')
+        self.t_cov = np.load('numpy_saved/t_cov' + add + '.npy')
+        # self.nu_t = np.load('numpy_saved/t_nu' + add + '.npy')
+
+        self.q = np.load('numpy_saved/q' + add + '.npy')
+        self.q_mean = np.load('numpy_saved/q_mean' + add + '.npy')
+        self.q_cov = np.load('numpy_saved/q_cov' + add + '.npy')
+        # self.nu_q = np.load('numpy_saved/q_nu' + add + '.npy')
+
+        self.artificial_data = np.load('numpy_saved/z' + add + '.npy')
+        self.m8 = np.load('numpy_saved/z_mean' + add + '.npy')
+        self.cov = np.load('numpy_saved/z_cov' + add + '.npy')
+        # self.nu = np.load('numpy_saved/z_nu' + add + '.npy')
+
+        # self.stats_vec = np.load('numpy_saved/stats_vec' + add + '.npy')
 
 
 if __name__ == "__main__":

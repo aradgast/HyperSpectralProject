@@ -7,7 +7,9 @@ import numpy as np
 
 if __name__ == "__main__":
     header = 'D1_F12_H1_Cropped.hdr'
-    z = ArtificialHyperspectralCube(header)
+    # header = 'bulb_0822-0903.hdr'
+    # header = 'self_test_rad.hdr'
+    z = ArtificialHyperspectralCube(header, False, 'ViaR')
     # z = ArtificialHyperspectralCube(header, True)
 
 
@@ -49,6 +51,5 @@ if __name__ == "__main__":
     # stats = calc_stats(res[0], res[1])
     # plot_stats(1, [stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
 
-    # z.save_cubes()
     pass
     print('done')
