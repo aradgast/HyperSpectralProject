@@ -8,6 +8,8 @@
 #############################################################################################################
 import numpy as np
 
+PRECISION = np.double
+
 
 def m8(cube):
     """this function calculate the 8 neighbors average for subtracting the background,
@@ -17,30 +19,35 @@ def m8(cube):
     :return: the 8 neighbors average cube in this shape"""
 
     row_num, col_num, band_num = cube.shape
-    m8cube = np.zeros(shape=(row_num, col_num, band_num), dtype=np.single)
+    m8cube = np.zeros(shape=(row_num, col_num, band_num), dtype=PRECISION)
 
-    m8cube[1:row_num-1, 1:col_num-1] = (cube[1:row_num-1, 2:col_num] + cube[1:row_num-1, 0:col_num-2] +
-                                        cube[2:row_num, 1:col_num-1] + cube[0:row_num-2, 1:col_num-1] +
-                                        cube[2:row_num, 2:col_num] + cube[2:row_num, 0:col_num-2] +
-                                        cube[0:row_num-2, 2:col_num] + cube[0:row_num-2, 0:col_num-2]) / 8
+    m8cube[1:row_num - 1, 1:col_num - 1] = (cube[1:row_num - 1, 2:col_num] + cube[1:row_num - 1, 0:col_num - 2] +
+                                            cube[2:row_num, 1:col_num - 1] + cube[0:row_num - 2, 1:col_num - 1] +
+                                            cube[2:row_num, 2:col_num] + cube[2:row_num, 0:col_num - 2] +
+                                            cube[0:row_num - 2, 2:col_num] + cube[0:row_num - 2, 0:col_num - 2]) / 8
 
     # the edge pixels
-    m8cube[0, 1:col_num-1] = np.squeeze((cube[0, 2:col_num] + cube[0, 0:col_num-2] +
-                              cube[1, 1:col_num-1] + cube[1, 2:col_num] + cube[1, 0:col_num-2]) / 5)
-    m8cube[row_num-1, 1:col_num-1] = np.squeeze((cube[row_num-1, 2:col_num] + cube[row_num-1, 0:col_num-2] +
-                                      cube[row_num-2, 0:col_num-2] + cube[row_num-2, 1:col_num-1] + cube[row_num-2, 2:col_num]) / 5)
+    m8cube[0, 1:col_num - 1] = np.squeeze((cube[0, 2:col_num] + cube[0, 0:col_num - 2] +
+                                           cube[1, 1:col_num - 1] + cube[1, 2:col_num] + cube[1, 0:col_num - 2]) / 5)
+    m8cube[row_num - 1, 1:col_num - 1] = np.squeeze((cube[row_num - 1, 2:col_num] + cube[row_num - 1, 0:col_num - 2] +
+                                                     cube[row_num - 2, 0:col_num - 2] + cube[row_num - 2,
+                                                                                        1:col_num - 1] + cube[
+                                                                                                         row_num - 2,
+                                                                                                         2:col_num]) / 5)
 
-    m8cube[1:row_num-1, 0] = np.squeeze((cube[0:row_num-2, 0] + cube[2:row_num, 0] +
-                              cube[0:row_num-2, 1] + cube[2:row_num, 1] + cube[1:row_num-1, 1]) / 5)
-    m8cube[1:row_num-1, col_num-1] = np.squeeze((cube[0:row_num-2, col_num - 1] + cube[2:row_num, col_num-1] +
-                                      cube[0:row_num-2, col_num - 2] + cube[1:row_num-1, col_num - 2] + cube[2:row_num, col_num - 2]) / 5)
+    m8cube[1:row_num - 1, 0] = np.squeeze((cube[0:row_num - 2, 0] + cube[2:row_num, 0] +
+                                           cube[0:row_num - 2, 1] + cube[2:row_num, 1] + cube[1:row_num - 1, 1]) / 5)
+    m8cube[1:row_num - 1, col_num - 1] = np.squeeze((cube[0:row_num - 2, col_num - 1] + cube[2:row_num, col_num - 1] +
+                                                     cube[0:row_num - 2, col_num - 2] + cube[1:row_num - 1,
+                                                                                        col_num - 2] + cube[2:row_num,
+                                                                                                       col_num - 2]) / 5)
 
     # the corner pixels
     m8cube[0, 0] = np.squeeze((cube[0, 1] + cube[1, 0] + cube[1, 1]) / 3)
-    m8cube[0, col_num-1] = np.squeeze((cube[0, col_num-2] + cube[1, col_num-1] + cube[1, col_num-2]) / 3)
-    m8cube[row_num-1, 0] = np.squeeze((cube[row_num-1, 1] + cube[row_num-2, 0] + cube[row_num-2, 1]) / 3)
-    m8cube[row_num-1, col_num-1] = np.squeeze((cube[row_num-1, col_num-2] + cube[row_num-2, col_num-1] +
-                                               cube[row_num-2, col_num-2]) / 3)
+    m8cube[0, col_num - 1] = np.squeeze((cube[0, col_num - 2] + cube[1, col_num - 1] + cube[1, col_num - 2]) / 3)
+    m8cube[row_num - 1, 0] = np.squeeze((cube[row_num - 1, 1] + cube[row_num - 2, 0] + cube[row_num - 2, 1]) / 3)
+    m8cube[row_num - 1, col_num - 1] = np.squeeze((cube[row_num - 1, col_num - 2] + cube[row_num - 2, col_num - 1] +
+                                                   cube[row_num - 2, col_num - 2]) / 3)
 
     return m8cube
 
@@ -51,16 +58,24 @@ def cov8(cube, m8_cube):
     :param m8: the 8 neighbors average cube
     :return: the covariance matrix of the cube"""
 
+    # rows, cols, bands = cube.shape
+    # cov = np.zeros(shape=(bands, bands), dtype=PRECISION)
+    # for r in range(rows):
+    #     for c in range(cols):
+    #         x1 = (cube[r, c, :] - m8_cube[r, c, :]).reshape((-1, 1))
+    #         cov += np.matmul(x1, np.transpose(x1)) / (rows * cols)
+    # return cov
+
     rows, cols, bands = cube.shape
-    cov = np.zeros(shape=(bands, bands), dtype=np.single)
-    for r in range(rows):
-        for c in range(cols):
-            x1 = (cube[r, c, :] - m8_cube[r, c, :]).reshape((-1, 1))
-            cov += np.matmul(x1, np.transpose(x1)) / (rows * cols)
+    x = cube - m8_cube  # subtract mean
+    x = x.reshape(rows * cols, bands)  # flatten to 2D array
+    cov = np.cov(x, rowvar=False, bias=True)  # compute covariance
     return cov
+
 
 if __name__ == "__main__":
     import spectral as spy
+
     cube = spy.open_image('D1_F12_H1_Cropped.hdr')
     a = cube.load(dtype='double')
     m = m8(a)

@@ -62,7 +62,8 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[0, 0].plot(hist_nt[i][1][1:], hist_nt[i][0],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
         title1 += legends[i]
-        ax[0, 0].set_xlim([-1000, 1000])
+        # ax[0, 0].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
+        ax[0, 0].set_xlim(-1000, 1000)
         ax[0,0].set_ylabel('Number of samples')
         ax[0,0].set_xlabel('Detection score')
         ax[0, 0].grid()
@@ -73,7 +74,8 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
             ax[0, 1].plot(hist_nt[i][1][1:], np.log10(hist_nt[i][0]),
                           '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
             title2 += legends[i]
-            ax[0, 1].set_xlim([-1000, 1000])
+            # ax[0, 1].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
+            ax[0, 1].set_xlim(-1000, 1000)
             ax[0, 1].set_ylabel('log10(Number of samples)')
             ax[0, 1].set_xlabel('Detection score')
             ax[0, 1].grid()
@@ -86,7 +88,8 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[1, 0].plot(thresholds[i][::-1], fpr[i][::-1],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
         title3 += legends[i]
-        ax[1,0].set_xlim([-1000, 1000])
+        # ax[1, 0].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
+        ax[1, 0].set_xlim(-1000, 1000)
         ax[1, 0].set_ylabel('Probability')
         ax[1, 0].set_xlabel('Detection score')
         ax[1, 0].grid()

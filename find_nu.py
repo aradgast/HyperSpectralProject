@@ -7,16 +7,16 @@
 #############################################################################################################
 import numpy as np
 from scipy.stats import ks_2samp
+from scipy.stats import t as t_dist
 
-
-def find_nu(cube, mean_matrix, cov, method):
+def find_nu(cube, mean_matrix, cov, method='Constant'):
     '''return the nu vector for the given cube.
     to possible methodas for finding nu:
-    1. estimate nu based on james teiler formula
+    1. estimate nu based on james tyler formula
     2. create a cube of t-distribution and find the nu for each band
     '''
-    # 1. estimate nu based on james teiler formula
-    if not method:
+    # 1. estimate nu based on james tyler formula
+    if method == 'Tyler':
         bands = cube.shape[2]
         nu = np.zeros((bands, 1))
         for i in range(bands):
@@ -25,10 +25,10 @@ def find_nu(cube, mean_matrix, cov, method):
             nu[i] = 2 + k / (k - 2)
 
     # 2. create a cube of t-distribution and find the nu for each band
-    else:
-        comp_mat = np.zeros(shape=(cube.shape[0] * cube.shape[1], cube.shape[2]))  # save the matrix represent the distribution
+    elif method == 'KS':
         nu_init = 2  # starts from nu value = 2
         simulation = 200  # number of nu values testing
+        comp_mat = np.zeros(shape=(cube.shape[0] * cube.shape[1], simulation))  # save the matrix represent the distribution
         nu_vec = np.zeros(shape=(simulation, 1))
         nu = np.zeros((cube.shape[2], 1))
         statiscis_result = np.zeros((simulation, 1))
@@ -45,5 +45,16 @@ def find_nu(cube, mean_matrix, cov, method):
                 test = ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
                 statiscis_result[sim] = test[0]
             nu[band] = nu_vec[np.argmin(statiscis_result)]
+
+    elif method == 'Constant':
+        nu = np.ones((cube.shape[2], 1)) * 2
+
+    elif method == 'MLE':
+        nu = np.zeros((cube.shape[2], 1))
+        for band in range(cube.shape[2]):
+            stats = t_dist.fit(cube[:, :, band].flatten())
+            nu[band] = stats[0]
+    else:
+        raise ValueError('method not found')
 
     return nu

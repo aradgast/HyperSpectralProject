@@ -1,4 +1,4 @@
-from detection_algo import matched_filter
+from detection_algo import matched_filter, ace, rx
 from ArtificialHyperspectral_class import ArtificialHyperspectralCube
 from plot_detection_algo import plot_stats, calc_stats
 import spectral as spy
@@ -6,14 +6,14 @@ from local_mean_covariance import m8, cov8
 import numpy as np
 
 if __name__ == "__main__":
-    header = 'D1_F12_H1_Cropped.hdr'
+    # header = 'D1_F12_H1_Cropped.hdr'
     # header = 'bulb_0822-0903.hdr'
-    # header = 'self_test_rad.hdr'
-    z = ArtificialHyperspectralCube(header, False, 'ViaR')
+    header = 'self_test_rad.hdr'
+    z = ArtificialHyperspectralCube(header, False, 'RIT', nu_method='MLE')
     # z = ArtificialHyperspectralCube(header, True)
 
 
-
+    print("Matched filter:")
     mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
     print(f"X peak distance: {np.round(mf_res_x[2], 3)}")
 
@@ -41,6 +41,32 @@ if __name__ == "__main__":
                [stats_x[3], stats_y[3], stats_z[3], stats_t[3], stats_q[3]],
                [stats_x[4], stats_y[4], stats_z[4], stats_t[4], stats_q[4]],
                ['X', 'Y', 'Z', 'T', 'Q'], 'MF')
+
+    # print("ACE:")
+    # ace_res_x = ace(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+    # print(f"X peak distance: {np.round(ace_res_x[2], 3)}")
+    # ace_res_y = ace(0.065, z.y, z.y_mean, z.y_cov, z.y[4, 2].reshape(1, 1, -1))
+    # print(f"Y peak distance: {np.round(ace_res_y[2], 3)}")
+    # ace_res_z = ace(0.065, z.artificial_data, z.m8, z.cov, z.y[4, 2].reshape(1, 1, -1))
+    # print(f"Z peak distance: {np.round(ace_res_z[2], 3)}")
+    # ace_res_t = ace(0.065, z.t, z.t_mean, z.t_cov, z.y[4, 2].reshape(1, 1, -1))
+    # print(f"T peak distance: {np.round(ace_res_t[2], 3)}")
+    # ace_res_q = ace(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+    # print(f"Q peak distance: {np.round(ace_res_q[2], 3)}")
+    #
+    # stats_x = calc_stats(ace_res_x[0], ace_res_x[1])
+    # stats_y = calc_stats(ace_res_y[0], ace_res_y[1])
+    # stats_z = calc_stats(ace_res_z[0], ace_res_z[1])
+    # stats_t = calc_stats(ace_res_t[0], ace_res_t[1])
+    # stats_q = calc_stats(ace_res_q[0], ace_res_q[1])
+    #
+    # plot_stats(5, [stats_x[0], stats_y[0], stats_z[0], stats_t[0], stats_q[0]],
+    #             [stats_x[1], stats_y[1], stats_z[1], stats_t[1], stats_q[1]],
+    #             [stats_x[2], stats_y[2], stats_z[2], stats_t[2], stats_q[2]],
+    #             [stats_x[3], stats_y[3], stats_z[3], stats_t[3], stats_q[3]],
+    #             [stats_x[4], stats_y[4], stats_z[4], stats_t[4], stats_q[4]],
+    #             ['X', 'Y', 'Z', 'T', 'Q'], 'ACE')
+
 
     # data = spy.open_image(header)
     # cube = data.load(dtype='double').copy()

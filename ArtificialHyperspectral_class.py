@@ -7,12 +7,15 @@
 ########################################################################################################################
 
 import numpy as np
-from scipy.stats import t as t_dist
+
 from local_mean_covariance import m8, cov8
 from spectral import *
 import matplotlib.pyplot as plt
 from PCA import pca
+from find_nu import find_nu
+from scipy.stats import t as t_dist
 
+PRECISION = np.double
 
 class ArtificialHyperspectralCube:
     """ this class initialize an artificial hyperspectral cube according to the original data
@@ -44,7 +47,7 @@ class ArtificialHyperspectralCube:
         self.nu_method = nu_method
         if is_load is False:
             self.data = open_image(header)
-            self.cube = self.data.load(dtype='single').copy()
+            self.cube = self.data.load(dtype=PRECISION).copy()
             self.rows, self.cols, self.bands = self.cube.shape
 
             self.x_mean = m8(self.cube)
@@ -55,48 +58,50 @@ class ArtificialHyperspectralCube:
             self.y_mean = m8(self.y)
             self.y_cov = cov8(self.y, self.y_mean)
 
-            # self.nu_x = find_nu(self.x_np, self.m8x, self.cov_x, False)
-            # self.nu_y = find_nu(self.y_np, self.m8y, self.cov_y, False)
+            # self.nu_x = find_nu(self.cube, self.x_mean, self.x_cov, method=nu_method)
+            self.nu_y = find_nu(self.y, self.y_mean, self.y_cov, method=nu_method)
 
             # Z cube ############
-            self.__create_z_cube([2 for i in range(self.bands)])
+            self.__create_z_cube(self.nu_y)
             self.m8 = m8(self.artificial_data)
             self.cov = cov8(self.artificial_data, self.m8)
-            # self.nu = find_nu(self.data, self.m8, self.cov, False)
+            # self.nu = find_nu(self.data, self.m8, self.cov, method=nu_method)
 
             # T cube ############
             self.t, _ = pca(self.artificial_data, self.m8, self.cov)
             self.t_mean = m8(self.t)
             self.t_cov = cov8(self.t, self.t_mean)
+            # self.t_nu = find_nu(self.t, self.t_mean, self.t_cov, method=nu_method)
 
             # Q cube ############
-            self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='single')
+            self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype=PRECISION)
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
             self.q_mean = m8(self.q)
             self.q_cov = cov8(self.q, self.q_mean)
+            # self.q_nu = find_nu(self.q, self.q_mean, self.q_cov, method=nu_method)
+
+            ############################
             self.save_params()
         else:
             self.load_params()
 
     def __create_z_cube(self, nu_vec):
-        self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands), dtype='single')
+        self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands), dtype=PRECISION)
         self.stats_vec = []
         for band in range(self.bands):
             # stats = t_dist.fit(self.y[:, :, band].flatten())
             # self.stats_vec.append(stats)
-            # self.artificial_data[:, :, band] = t_dist.rvs(stats[0], loc=stats[1], scale=stats[2], size=(self.rows, self.cols))
-            # self.artificial_data[:, :, band] += np.random.standard_t(nu_vec[band], size=(self.rows, self.cols), dtype='float16')
             self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], loc=0, scale=1, size=(self.rows, self.cols))
         self.m8 = m8(self.artificial_data)
         self.cov = cov8(self.artificial_data, self.m8)
 
         for band in range(self.bands):
             self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band],
-                                                                                          dtype='single')
+                                                                                          dtype=PRECISION)
             self.artificial_data[:, :, band] = self.artificial_data[:, :, band] * np.sqrt(self.y_cov[band, band],
-                                                                                          dtype='single')
+                                                                                          dtype=PRECISION)
 
         self.artificial_data = np.array(self.artificial_data) + self.y_mean
 
@@ -112,20 +117,20 @@ class ArtificialHyperspectralCube:
         np.save('numpy_saved/x_eigvec' + add + '.npy', self.x_eigvec)
         # np.save('numpy_saved/x_nu' + add + '.npy', self.nu_x)
 
-        np.save('numpy_saved/y' + add + '.npy', self.q)
-        np.save('numpy_saved/y_mean' + add + '.npy', self.q_mean)
-        np.save('numpy_saved/y_cov' + add + '.npy', self.q_cov)
-        # np.save('y_nu' + add + '.npy', self.nu_y)
+        np.save('numpy_saved/y' + add + '.npy', self.y)
+        np.save('numpy_saved/y_mean' + add + '.npy', self.y_mean)
+        np.save('numpy_saved/y_cov' + add + '.npy', self.y_cov)
+        np.save('y_nu' + add + '.npy', self.nu_y)
 
         np.save('numpy_saved/t' + add + '.npy', self.t)
         np.save('numpy_saved/t_mean' + add + '.npy', self.t_mean)
         np.save('numpy_saved/t_cov' + add + '.npy', self.t_cov)
-        # np.save('numpy_saved/t_nu' + add + '.npy', self.nu_t)
+        # np.save('numpy_saved/t_nu' + add + '.npy', self.t_nu)
 
         np.save('numpy_saved/q' + add + '.npy', self.q)
         np.save('numpy_saved/q_mean' + add + '.npy', self.q_mean)
         np.save('numpy_saved/q_cov' + add + '.npy', self.q_cov)
-        # np.save('q_nu' + add + '.npy', self.nu_q)
+        # np.save('q_nu' + add + '.npy', self.q_nu)
 
         np.save('numpy_saved/z' + add + '.npy', self.artificial_data)
         np.save('numpy_saved/z_mean' + add + '.npy', self.m8)
@@ -151,7 +156,7 @@ class ArtificialHyperspectralCube:
         self.y = np.load('numpy_saved/y' + add + '.npy')
         self.y_mean = np.load('numpy_saved/y_mean' + add + '.npy')
         self.y_cov = np.load('numpy_saved/y_cov' + add + '.npy')
-        # self.nu_y = np.load('numpy_saved/y_nu' + add + '.npy')
+        self.nu_y = np.load('numpy_saved/y_nu' + add + '.npy')
 
         self.t = np.load('numpy_saved/t' + add + '.npy')
         self.t_mean = np.load('numpy_saved/t_mean' + add + '.npy')
