@@ -8,8 +8,9 @@ import numpy as np
 if __name__ == "__main__":
     # header = 'D1_F12_H1_Cropped.hdr'
     # header = 'bulb_0822-0903.hdr'
-    header = 'self_test_rad.hdr'
-    z = ArtificialHyperspectralCube(header, False, 'RIT', nu_method='MLE')
+    # header = 'self_test_rad.hdr'
+    header = 'blind_test_refl.hdr'
+    z = ArtificialHyperspectralCube(header, False, 'RIT', nu_method='NN')
     # z = ArtificialHyperspectralCube(header, True)
 
 

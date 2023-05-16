@@ -8,6 +8,10 @@
 import numpy as np
 from scipy.stats import ks_2samp
 from scipy.stats import t as t_dist
+from DL_DOF import DOFNet
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
 
 def find_nu(cube, mean_matrix, cov, method='Constant'):
     '''return the nu vector for the given cube.
@@ -47,14 +51,33 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
             nu[band] = nu_vec[np.argmin(statiscis_result)]
 
     elif method == 'Constant':
-        nu = np.ones((cube.shape[2], 1)) * 2
+        nu = np.ones((cube.shape[2], 1)) * 3
 
     elif method == 'MLE':
         nu = np.zeros((cube.shape[2], 1))
         for band in range(cube.shape[2]):
             stats = t_dist.fit(cube[:, :, band].flatten())
             nu[band] = stats[0]
+
+    elif method == 'NN':
+        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
+        net = DOFNet()
+        net.load_state_dict(torch.load(weights_path))
+        net.eval()
+
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize((224, 224))])
+        image = transform(cube)
+
+        nu = []
+        with torch.no_grad():
+            for band in range(cube.shape[2]):
+                input_band = image[band, :, :].unsqueeze(0).unsqueeze(0)
+                output = net(input_band)
+                nu.append(output.item())
     else:
         raise ValueError('method not found')
+
 
     return nu
