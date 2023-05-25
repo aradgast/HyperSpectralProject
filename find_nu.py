@@ -53,8 +53,11 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
                 statiscis_result[sim] = test[0]
             nu[band] = nu_vec[np.argmin(statiscis_result)]
 
-    elif method == 'Constant':
+    elif method == 'Constant2':
         nu = np.ones((cube.shape[2], 1)) * 2
+
+    elif method == 'Constant3':
+        nu = np.ones((cube.shape[2], 1)) * 3
 
     elif method == 'MLE':
         nu = np.zeros((cube.shape[2], 1))
