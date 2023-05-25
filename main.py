@@ -10,7 +10,10 @@ if __name__ == "__main__":
     # header = 'bulb_0822-0903.hdr'
     # header = 'self_test_rad.hdr'
     # header = 'blind_test_refl.hdr'
-    z = ArtificialHyperspectralCube(header, False, 'ViaReggio', nu_method='NN')
+    name = 'ViaReggio'
+    # name = 'RIT'
+    method = 'Constant'
+    z = ArtificialHyperspectralCube(header, False, name, nu_method=method)
     # z = ArtificialHyperspectralCube(header, True)
 
 
@@ -41,7 +44,7 @@ if __name__ == "__main__":
                [stats_x[2], stats_y[2], stats_z[2], stats_t[2], stats_q[2]],
                [stats_x[3], stats_y[3], stats_z[3], stats_t[3], stats_q[3]],
                [stats_x[4], stats_y[4], stats_z[4], stats_t[4], stats_q[4]],
-               ['X', 'Y', 'Z', 'T', 'Q'], 'MF')
+               ['X', 'Y', 'Z', 'T', 'Q'], 'MF', name, method)
 
     # print("ACE:")
     # ace_res_x = ace(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))

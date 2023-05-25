@@ -37,7 +37,7 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
     return histogram_wt, histogram_nt, fpr, tpr, thresholds
 
 
-def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF'):
+def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF', name='ViaReggio', method='Constant2'):
     """this function plots the results of the detection algorithm
     axis - the axis of the cumulative probability
     hist_wt - the histogram of the WT
@@ -97,9 +97,15 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
 
         idx = len(fpr[i][fpr[i] <= 0.01])
         roc_auc = auc(fpr[i][:idx], tpr[i][:idx])
-        ax[1, 1].plot(fpr[i], tpr[i],
+        print(f"the AUC for {legends[i]} is {roc_auc}")
+        if legends[i] == 'X':
+            ax[1, 1].plot(fpr[i], tpr[i],
                       label=f"{legends[i]}: AUC = {np.round(roc_auc,3)}", color=colors[i], linewidth=number_of_cubes - i)
-        title4 += legends[i]
+            X_auc = roc_auc
+        else:
+            realtive_error = np.abs(roc_auc - X_auc) / X_auc
+            ax[1, 1].plot(fpr[i], tpr[i],
+                      label=f"{legends[i]}_rel_error AUC = {np.round(realtive_error,5)}", color=colors[i], linewidth=number_of_cubes - i)
         ax[1, 1].set_xlabel('False Positive Rate')
         ax[1, 1].set_ylabel('True Positive Rate')
         ax[1, 1].set_xlim([0, 0.01])
@@ -111,6 +117,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
     ax[1, 0].set_title(title3)
     ax[1, 1].set_title(title4)
     fig.tight_layout()
+    plt.savefig(f'{name}_{algo_name}_{method}_results.png')
     plt.show()
 
 
