@@ -11,7 +11,9 @@ if __name__ == "__main__":
     # method = 'Constant2'                     # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
     methods = ['NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler']
     for method in methods:
-
+        print("############################################################################################################")
+        print(f"Method: {method}")
+        print("############################################################################################################")
         z = ArtificialHyperspectralCube(header, False, name, nu_method=method)
 
 
