@@ -13,6 +13,9 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def find_nu(cube, mean_matrix, cov, method='Constant'):
     '''return the nu vector for the given cube.
     to possible methodas for finding nu:
@@ -60,20 +63,21 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
             nu[band] = stats[0]
 
     elif method == 'NN':
-        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
+        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model3.pt"
         net = DOFNet()
-        net.load_state_dict(torch.load(weights_path))
+        net.load_state_dict(torch.load(weights_path, map_location=device))
         net.eval()
+        net.to(device)
 
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize((224, 224))])
-        image = transform(cube)
+        image = transform(cube).to(device)
 
         nu = []
         with torch.no_grad():
             for band in range(cube.shape[2]):
-                input_band = image[band, :, :].unsqueeze(0).unsqueeze(0)
+                input_band = image[band, :, :].unsqueeze(0)
                 output = net(input_band)
                 nu.append(output.item())
     else:

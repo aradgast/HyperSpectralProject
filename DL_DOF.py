@@ -9,6 +9,8 @@ from torch.optim import Adam
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def generate_hyperspectral_image(num_of_sampels: int):
     """
@@ -65,23 +67,27 @@ class DOFNet(nn.Module):
             nn.Sequential(
                 nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.Dropout(p=0.1)
             ),
             nn.Sequential(
                 nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.Dropout(p=0.1)
             ),
             nn.Sequential(
                 nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(),
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.Dropout(p=0.1)
             )
         )
 
         self.classifier = nn.Sequential(
             nn.Linear(64 * 28 * 28, 64),
             nn.ReLU(),
+            nn.Dropout(p=0.1),
             nn.Linear(64, 1)
         )
 
@@ -182,7 +188,6 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Parameters
     num_epochs = 10
