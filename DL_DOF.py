@@ -18,7 +18,7 @@ def generate_hyperspectral_image(num_of_sampels: int):
     :param num_of_sampels: number of samples to generate
     :return: a list of images and a list of labels
     """
-    image_sizes = (224,224)
+    image_sizes = (480,480)
     images = []
     labels = []
 

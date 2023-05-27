@@ -9,7 +9,7 @@ if __name__ == "__main__":
     header = 'D1_F12_H1_Cropped.hdr'        # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
     name = 'ViaReggio'                      # 'ViaReggio', 'RIT'
     # method = 'Constant2'                     # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
-    methods = ['NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler']
+    methods = ['Tyler']
     for method in methods:
         print("############################################################################################################")
         print(f"Method: {method}")

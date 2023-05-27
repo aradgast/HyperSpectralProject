@@ -29,7 +29,10 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
         for i in range(bands):
             r = np.abs(cube[:, :, i] / np.sqrt(cov[i, i]))
             k = np.mean(np.power(r, 3)) / np.mean(r)
-            nu[i] = 2 + k / (k - 2)
+            if k <= 2:
+                nu[i] = 0
+            else:
+                nu[i] = 2 + k / (k - 2)
 
     # 2. create a cube of t-distribution and find the nu for each band
     elif method == 'KS':

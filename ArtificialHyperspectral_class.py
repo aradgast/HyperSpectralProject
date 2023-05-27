@@ -91,9 +91,10 @@ class ArtificialHyperspectralCube:
         self.artificial_data = np.zeros(shape=(self.rows, self.cols, self.bands), dtype=PRECISION)
         self.stats_vec = []
         for band in range(self.bands):
-            # stats = t_dist.fit(self.y[:, :, band].flatten())
-            # self.stats_vec.append(stats)
-            self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], loc=0, scale=1, size=(self.rows, self.cols))
+            if nu_vec[band] == 0:
+                self.artificial_data[:, :, band] = np.random.normal(loc=0, scale=1, size=(self.rows, self.cols))
+            else:
+                self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], loc=0, scale=1, size=(self.rows, self.cols))
         self.m8 = m8(self.artificial_data)
         self.cov = cov8(self.artificial_data, self.m8)
 
