@@ -71,7 +71,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
             nu[band] = stats[0]
 
     elif method == 'NN':
-        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
+        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject\weights//best_model.pt"
         net = DOFNet()
         net.load_state_dict(torch.load(weights_path, map_location=device))
         net.eval()
