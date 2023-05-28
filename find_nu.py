@@ -38,7 +38,8 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
     elif method == 'KS':
         nu_init = 2  # starts from nu value = 2
         simulation = 200  # number of nu values testing
-        comp_mat = np.zeros(shape=(cube.shape[0] * cube.shape[1], simulation))  # save the matrix represent the distribution
+        comp_mat = np.zeros(
+            shape=(cube.shape[0] * cube.shape[1], simulation))  # save the matrix represent the distribution
         nu_vec = np.zeros(shape=(simulation, 1))
         nu = np.zeros((cube.shape[2], 1))
         statiscis_result = np.zeros((simulation, 1))
@@ -52,7 +53,8 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
 
         for band in range(cube.shape[2]):
             for sim in range(simulation):
-                test = ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim], alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
+                test = ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim],
+                                alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
                 statiscis_result[sim] = test[0]
             nu[band] = nu_vec[np.argmin(statiscis_result)]
 
@@ -69,7 +71,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
             nu[band] = stats[0]
 
     elif method == 'NN':
-        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model3.pt"
+        weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
         net = DOFNet()
         net.load_state_dict(torch.load(weights_path, map_location=device))
         net.eval()
@@ -89,5 +91,24 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
     else:
         raise ValueError('method not found')
 
-
     return nu
+
+
+if __name__ == "__main__":
+    weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
+    net = DOFNet()
+    net.load_state_dict(torch.load(weights_path, map_location=device))
+    print(net)
+    net.eval()
+    net.to(device)
+    import spectral as spy
+    data = spy.open_image('self_test_rad.hdr')
+    # convert the data to a numpy array
+    data = np.array(data.open_memmap())
+    data = data[:, :, 0:5].astype(np.float32)
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((224, 224))])
+    data = transform(data).to(device)
+    output = net(data)
+    print(output)

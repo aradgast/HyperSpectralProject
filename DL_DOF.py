@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def generate_hyperspectral_image(num_of_sampels: int):
+def generate_hyperspectral_image(num_of_sampels: int, size_of_image: int = 224) -> (list, list):
     """
     Generate a random hyperspectral image
     :param num_of_sampels: number of samples to generate
     :return: a list of images and a list of labels
     """
-    image_sizes = (480,480)
+    image_sizes = (size_of_image,size_of_image)
     images = []
     labels = []
 
@@ -34,9 +34,7 @@ def generate_hyperspectral_image(num_of_sampels: int):
 transform = transforms.Compose([
     transforms.ToPILImage(),
     transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225])
+    transforms.ToTensor()
 ])
 
 
@@ -44,7 +42,7 @@ class HyperspectralDataset(Dataset):
     def __init__(self, images, labels):
         self.images = images
         self.labels = labels
-        # self.transform = transform
+        self.transform = transform
 
     def __len__(self):
         return len(self.images)
@@ -53,8 +51,8 @@ class HyperspectralDataset(Dataset):
         image = torch.from_numpy(self.images[index]).float()
         label = torch.from_numpy(self.labels[index]).float()
 
-        # if self.transform:
-        #     image = self.transform(image)
+        if self.transform:
+            image = self.transform(image)
 
         return image, label
 
@@ -85,16 +83,17 @@ class DOFNet(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(64 * 28 * 28, 64),
+            nn.Linear(64 * 28 * 28, 64*28),
             nn.ReLU(),
             nn.Dropout(p=0.1),
+            nn.Linear(64 * 28, 64),
+            nn.ReLU(),
             nn.Linear(64, 1)
         )
 
     def forward(self, x):
-        x = x.unsqueeze(1)
         x = self.features(x)
-        x = x.view(x.size(0), -1)
+        x = x.view(1, -1)
         x = self.classifier(x)
 
         return x
@@ -137,6 +136,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
         val_loss = 0.0
 
         with torch.no_grad():
+            model.eval()
             for inputs, labels in test_dataloader:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
@@ -172,7 +172,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
 if __name__ == "__main__":
     # Generate a random image
-    sample_size = 10000
+    sample_size = 30000
     images, labels = generate_hyperspectral_image(sample_size)
     images_train, images_test, labels_train, labels_test = train_test_split(images, labels, test_size=0.1,
                                                                             random_state=42)
@@ -195,6 +195,7 @@ if __name__ == "__main__":
 
     # Create the model
     model = DOFNet().to(device)
+    model.load_state_dict(torch.load('best_model.pt'))
 
     # Define loss function and optimizer
     criterion = nn.MSELoss()
