@@ -1,0 +1,1 @@
+PRECISION = np.double
