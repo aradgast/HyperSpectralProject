@@ -1,1 +1,2 @@
-PRECISION = np.double
+import numpy as np
+PRECISION = np.single
