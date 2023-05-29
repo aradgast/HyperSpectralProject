@@ -24,7 +24,6 @@ def get_pca(data, mean=None, cov=None):
         mean = get_m8(data)
     if cov is None:
         cov = get_cov8(data, mean)
-    data -= mean
 
     eigval, eigvec = np.linalg.eig(cov)
 

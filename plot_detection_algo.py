@@ -15,21 +15,15 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
     target_cube - the cube with the target
     no_target_cube - the cube without the target
     bins - the number of bins in the histogram
+
+    returns: the histogram of the WT+NT, the false positive rate, the true positive rate, the thresholds
     """
-    max_val = np.max([np.max(target_cube), np.max(no_target_cube)]) * 1.1
-    min_val = np.min([np.min(target_cube), np.min(no_target_cube)]) * 1.1
-    x = np.linspace(min_val, max_val, bins)
+    bins_value = 1000
+    x = np.linspace(-bins_value, bins_value, bins)
 
     histogram_wt = np.histogram(target_cube, x)
     histogram_nt = np.histogram(no_target_cube, x)
 
-    # inv_cumulative_probability_wt = np.zeros(shape=(bins, 1))
-    # inv_cumulative_probability_nt = np.zeros(shape=(bins, 1))
-    # for bin in range(bins):
-    #     inv_cumulative_probability_wt[bin] = np.sum(histogram_wt[0][bin:])
-    #     inv_cumulative_probability_nt[bin] = np.sum(histogram_nt[0][bin:])
-    # inv_cumulative_probability_nt *= 1 / np.max(inv_cumulative_probability_nt)
-    # inv_cumulative_probability_wt *= 1 / np.max(inv_cumulative_probability_wt)
     fpr, tpr, thresholds = roc_curve(np.concatenate([np.zeros_like(no_target_cube.flatten()),
                                                      np.ones_like(target_cube.flatten())]),
                                      np.concatenate([no_target_cube.flatten(), target_cube.flatten()]))
@@ -62,7 +56,6 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[0, 0].plot(hist_nt[i][1][1:], hist_nt[i][0],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
         title1 += legends[i]
-        # ax[0, 0].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
         ax[0, 0].set_xlim(-1000, 1000)
         ax[0,0].set_ylabel('Number of samples')
         ax[0,0].set_xlabel('Detection score')

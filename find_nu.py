@@ -49,7 +49,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
             comp_mat[:, i] *= 1 / np.std(comp_mat[:, i])
             comp_mat[:, i] -= np.mean(comp_mat[:, i])
             nu_vec[i] = nu_init
-            nu_init += 3 / simulation
+            nu_init += 20 / simulation
 
         for band in range(cube.shape[2]):
             for sim in range(simulation):

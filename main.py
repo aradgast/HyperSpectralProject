@@ -61,17 +61,26 @@ if __name__ == "__main__":
     # simulation for checking the DOF estimation methods.
 
     # first, creating the data.
-    relative_dof = 10
-    size_of_simulation = 100
+    # relative_dof = 10
+    size_of_simulation = 150
     size_of_matrix = 300
-    methods = ['NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler']
-    cube = t_dist.rvs(relative_dof, loc=0, scale=1, size=(size_of_matrix, size_of_matrix, size_of_simulation))
+    methods = ['NN', 'MLE', 'KS', 'Tyler']
+    true_nu = []
+    cube = np.zeros((size_of_matrix, size_of_matrix, size_of_simulation)).astype(np.single)
+    for s in range(size_of_simulation):
+        tmp_nu = np.random.uniform(1, 30)
+        cube[:, :, s] = t_dist.rvs(tmp_nu, loc=0, scale=1, size=(size_of_matrix, size_of_matrix)).astype(np.single)
+        true_nu.append(tmp_nu)
     m8_cube = get_m8(cube)
     cov8_cube = get_cov8(cube, m8_cube)
+    print("Done with creating the data.")
     plt.figure()
+    plt.plot([_ for _ in range(size_of_simulation)], true_nu, label='True nu')
     for method in methods:
+        print(f"Method: {method}")
         nu = find_nu(cube, m8_cube, cov8_cube, method)
         plt.plot([_ for _ in range(size_of_simulation)], nu, label=method)
+        print(f"Done with: {method}")
     plt.title("DOF estimation in different methods")
     plt.legend()
     plt.grid()
