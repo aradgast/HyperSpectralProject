@@ -7,9 +7,10 @@
 #############################################################################################################
 
 import numpy as np
+from local_mean_covariance import get_m8, get_cov8
+from legends import *
 
-
-def pca(data, mean, cov):
+def get_pca(data, mean=None, cov=None):
     """This function calculate the PCA of the data cube to create un-correlated bands
     param data: the data cube
     param mean: the mean of the data cube
@@ -18,17 +19,21 @@ def pca(data, mean, cov):
 
     # get the shape of the cube
     row, col, bands = data.shape
-    cube = np.zeros(shape=(row, col, bands), dtype='single')
-    # data -= mean
+    cube = np.zeros(shape=(row, col, bands), dtype=PRECISION)
+    if mean is None:
+        mean = get_m8(data)
+    if cov is None:
+        cov = get_cov8(data, mean)
+    data -= mean
 
     eigval, eigvec = np.linalg.eig(cov)
 
-    scale_eigvec = np.matmul(np.linalg.inv(np.diag(np.sqrt(eigval))), eigvec.T, dtype='single')
+    scale_eigvec = np.matmul(np.linalg.inv(np.diag(np.sqrt(eigval))), eigvec.T, dtype=PRECISION)
 
     # project the data
     for r in range(row):
         for c in range(col):
-            cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype='single')
+            cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype=PRECISION)
 
     return cube, eigvec
 
@@ -42,7 +47,7 @@ if __name__ == "__main__":
     # convert the data to a numpy array
     data = np.array(data.open_memmap())
     # perform PCA
-    cube, cov, cov2 = pca(data)
+    cube, cov, cov2 = get_pca(data)
     # plot the data
     plt.imshow(cube[:, :, 0])
     plt.show()
