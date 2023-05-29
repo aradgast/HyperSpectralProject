@@ -50,13 +50,13 @@ class ArtificialHyperspectralCube:
             self.cube = self.data.load(dtype=PRECISION).copy()
             self.rows, self.cols, self.bands = self.cube.shape
 
-            self.x_mean = local_mean_covariance.m8(self.cube)
-            self.x_cov = local_mean_covariance.cov8(self.cube, self.x_mean)
+            self.x_mean = local_mean_covariance.get_m8(self.cube)
+            self.x_cov = local_mean_covariance.get_cov8(self.cube, self.x_mean)
 
             self.y, self.x_eigvec = pca(self.cube, self.x_mean, self.x_cov)
 
-            self.y_mean = local_mean_covariance.m8(self.y)
-            self.y_cov = local_mean_covariance.cov8(self.y, self.y_mean)
+            self.y_mean = local_mean_covariance.get_m8(self.y)
+            self.y_cov = local_mean_covariance.get_cov8(self.y, self.y_mean)
 
             # self.nu_x = find_nu(self.cube, self.x_mean, self.x_cov, method=nu_method)
             self.nu_y = find_nu(self.y, self.y_mean, self.y_cov, method=nu_method)
@@ -65,14 +65,14 @@ class ArtificialHyperspectralCube:
             self.__create_z_cube(self.nu_y)
             # self.m8 = m8(self.artificial_data)
             self.m8 = np.mean(self.artificial_data, (0, 1))
-            self.cov = local_mean_covariance.cov8(self.artificial_data, self.m8)
+            self.cov = local_mean_covariance.get_cov8(self.artificial_data, self.m8)
             # self.nu = find_nu(self.data, self.m8, self.cov, method=nu_method)
 
             # T cube ############
             self.t, _ = pca(self.artificial_data, self.m8, self.cov)
             # self.t_mean = m8(self.t)
             self.t_mean = np.mean(self.t, (0, 1))
-            self.t_cov = local_mean_covariance.cov8(self.t, self.t_mean)
+            self.t_cov = local_mean_covariance.get_cov8(self.t, self.t_mean)
             # self.t_nu = find_nu(self.t, self.t_mean, self.t_cov, method=nu_method)
 
             # Q cube ############
@@ -80,9 +80,9 @@ class ArtificialHyperspectralCube:
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
-            self.q_mean = local_mean_covariance.m8(self.q)
+            self.q_mean = local_mean_covariance.get_m8(self.q)
             self.q_mean = np.mean(self.q, (0,1))
-            self.q_cov = local_mean_covariance.cov8(self.q, self.q_mean)
+            self.q_cov = local_mean_covariance.get_cov8(self.q, self.q_mean)
             # self.q_nu = find_nu(self.q, self.q_mean, self.q_cov, method=nu_method)
 
             # G cube ############
@@ -94,7 +94,7 @@ class ArtificialHyperspectralCube:
             self.g += self.y_mean
             # self.g_mean = local_mean_covariance.m8(self.g)
             self.g_mean = np.mean(self.g, (0,1))
-            self.g_cov = local_mean_covariance.cov8(self.g, self.g_mean)
+            self.g_cov = local_mean_covariance.get_cov8(self.g, self.g_mean)
 
             ############################
 
@@ -111,7 +111,7 @@ class ArtificialHyperspectralCube:
             else:
                 self.artificial_data[:, :, band] += t_dist.rvs(nu_vec[band], loc=0, scale=1, size=(self.rows, self.cols))
         self.m8 = np.mean(self.artificial_data, (0,1))
-        self.cov = local_mean_covariance.cov8(self.artificial_data, self.m8)
+        self.cov = local_mean_covariance.get_cov8(self.artificial_data, self.m8)
 
         for band in range(self.bands):
             self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band],

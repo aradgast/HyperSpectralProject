@@ -11,7 +11,7 @@ import numpy as np
 PRECISION = np.double
 
 
-def m8(cube):
+def get_m8(cube):
     """this function calculate the 8 neighbors average for subtracting the background,
      include the case when the pixel is on the edge and
     the cube are a 3D
@@ -52,7 +52,7 @@ def m8(cube):
     return m8cube
 
 
-def cov8(cube, m8_cube):
+def get_cov8(cube, m8_cube):
     """this function calculate the covariance matrix of the cube using the 8 neighbors average
     :param cube: the cube of the image
     :param m8: the 8 neighbors average cube
@@ -78,6 +78,6 @@ if __name__ == "__main__":
 
     cube = spy.open_image('D1_F12_H1_Cropped.hdr')
     a = cube.load(dtype='double')
-    m = m8(a)
-    c = cov8(a, m)
-    print(cov8(a, m).shape)
+    m = get_m8(a)
+    c = get_cov8(a, m)
+    print(get_cov8(a, m).shape)

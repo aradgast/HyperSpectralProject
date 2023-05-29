@@ -111,13 +111,13 @@ def ace(p: float, cube: np.ndarray, m8_cube: np.ndarray, cov: np.ndarray, target
 
 if __name__ == "__main__":
     import spectral as spy
-    from local_mean_covariance import m8, cov8
+    from local_mean_covariance import get_m8, get_cov8
     from plot_detection_algo import plot_stats, calc_stats
     import matplotlib.pyplot as plt
 
     cube = np.random.random(size=(10, 15, 5))
-    m8_cube = m8(cube)
-    res = rx(1, cube, m8_cube, cov8(cube, m8_cube), cube[0, 0].reshape(1, 1, -1))
+    m8_cube = get_m8(cube)
+    res = rx(1, cube, m8_cube, get_cov8(cube, m8_cube), cube[0, 0].reshape(1, 1, -1))
     stats = calc_stats(res[0], res[1], bins=10)
     plot_stats(1, [stats[0]], [stats[1]], [stats[2]], [stats[3]], [stats[4]])
     print("done")

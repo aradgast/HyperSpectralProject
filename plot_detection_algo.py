@@ -103,7 +103,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
                       label=f"{legends[i]}: AUC = {np.round(roc_auc,3)}", color=colors[i], linewidth=number_of_cubes - i)
             X_auc = roc_auc
         else:
-            realtive_error = (np.abs(roc_auc - X_auc) / np.max([X_auc,roc_auc])) * 100
+            realtive_error = (np.abs(roc_auc - X_auc) / X_auc) * 100
             ax[1, 1].plot(fpr[i], tpr[i],
                       label=f"{legends[i]}_rel_error AUC = {np.round(realtive_error,5)} %", color=colors[i], linewidth=number_of_cubes - i)
         ax[1, 1].set_xlabel('False Positive Rate')
