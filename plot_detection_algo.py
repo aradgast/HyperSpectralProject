@@ -44,18 +44,17 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
     returns: None"""
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
-    title1 = f'{algo_name} - histogram results for '
-    title2 = f'{algo_name} - log10 histogram results for '
-    title3 = f'{algo_name} - inverse cumulative probability for '
-    title4 = f'{algo_name} - ROC curve with limited pfa for '
-    colors = ['g', 'b', 'y', 'r', 'k', 'c', 'm', 'w']
+    title1 = f'{algo_name} - histogram results'
+    title2 = f'{algo_name} - log10 histogram results'
+    title3 = f'{algo_name} - inverse cumulative probability'
+    title4 = f'{algo_name} - ROC curve with limited pfa'
+    colors = ['g', 'b', 'r', 'k', 'c', 'm','y', 'w']
 
     for i in range(number_of_cubes):
         ax[0, 0].plot(hist_wt[i][1][1:], hist_wt[i][0],
                       label=f'{legends[i]}_WT', color=colors[i], linewidth=number_of_cubes - i)
         ax[0, 0].plot(hist_nt[i][1][1:], hist_nt[i][0],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
-        title1 += legends[i]
         ax[0, 0].set_xlim(-1000, 1000)
         ax[0,0].set_ylabel('Number of samples')
         ax[0,0].set_xlabel('Detection score')
@@ -66,7 +65,6 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
                           label=f'{legends[i]}_WT', color=colors[i], linewidth=number_of_cubes - i)
             ax[0, 1].plot(hist_nt[i][1][1:], np.log10(hist_nt[i][0]),
                           '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
-            title2 += legends[i]
             # ax[0, 1].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
             ax[0, 1].set_xlim(-1000, 1000)
             ax[0, 1].set_ylabel('log10(Number of samples)')
@@ -80,7 +78,6 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
                       label=f'{legends[i]}_WT', color=colors[i], linewidth=number_of_cubes - i)
         ax[1, 0].plot(thresholds[i][::-1], fpr[i][::-1],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
-        title3 += legends[i]
         # ax[1, 0].set_xlim([np.min(hist_wt[i][1][1:]), np.max(hist_wt[i][1][1:])])
         ax[1, 0].set_xlim(-1000, 1000)
         ax[1, 0].set_ylabel('Probability')
@@ -91,7 +88,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         idx = len(fpr[i][fpr[i] <= 0.01])
         roc_auc = auc(fpr[i][:idx], tpr[i][:idx])
         print(f"the AUC for {legends[i]} is {roc_auc}")
-        if legends[i] == 'X':
+        if legends[i] == 'Original data':
             ax[1, 1].plot(fpr[i], tpr[i],
                       label=f"{legends[i]}: AUC = {np.round(roc_auc,3)}", color=colors[i], linewidth=number_of_cubes - i)
             X_auc = roc_auc

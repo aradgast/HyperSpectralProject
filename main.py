@@ -13,11 +13,12 @@ import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
-    header = 'self_test_rad.hdr'        # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    name = 'RIT_with_gaussian'                      # 'ViaReggio', 'RIT'
-    # method = 'Constant2'                     # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
+    header = 'data\self_test_rad.hdr'                   # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    statistical_method = 'global'                       # 'global', 'local'
+    name = f'RIT_with_gaussian_{statistical_method}'    # 'ViaReggio', 'RIT'
+    # method = 'Constant2'                              # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
     methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
-    z = ArtificialHyperspectralCube(header)
+    z = ArtificialHyperspectralCube(header, statistical_method='statistical_method')
     mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
     mf_res_g = matched_filter(0.065, z.g, z.g_mean, z.g_cov, z.y[4, 2].reshape(1, 1, -1))
     stats_x = calc_stats(mf_res_x[0], mf_res_x[1])

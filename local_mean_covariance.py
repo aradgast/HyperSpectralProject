@@ -77,7 +77,7 @@ def get_cov8(cube, m8_cube = None, method='local'):
 if __name__ == "__main__":
     import spectral as spy
 
-    cube = spy.open_image('D1_F12_H1_Cropped.hdr')
+    cube = spy.open_image('data/D1_F12_H1_Cropped.hdr')
     a = cube.load(dtype='double')
     m = get_m8(a)
     c = get_cov8(a, m)

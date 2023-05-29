@@ -40,9 +40,9 @@ class ArtificialHyperspectralCube:
 
      """
 
-    def __init__(self, header):
+    def __init__(self, header, statistical_method='local'):
         """ this function initialize the class"""
-
+        self.statistical_method = statistical_method
         self.data = open_image(header)
         self.cube = self.data.load(dtype=PRECISION).copy()
         self.rows, self.cols, self.bands = self.cube.shape
@@ -62,8 +62,8 @@ class ArtificialHyperspectralCube:
             self.g[:, :, s] = self.g[:, :, s] / np.sqrt(np.std(self.g[:, :, s]))
             self.g[:, :, s] = self.g[:, :, s] * np.sqrt(self.y_cov[s, s], dtype=PRECISION)
         self.g += self.y_mean
-        self.g_mean = get_m8(self.g)
-        self.g_cov = get_cov8(self.g, self.g_mean)
+        self.g_mean = get_m8(self.g, self.statistical_method)
+        self.g_cov = get_cov8(self.g, self.g_mean, self.statistical_method)
 
         # initiate the fields
         self.nu_x = None
@@ -92,8 +92,8 @@ class ArtificialHyperspectralCube:
             else:
                 self.artificial_data[:, :, band] += t_dist.rvs(self.nu_y[band], loc=0, scale=1,
                                                                size=(self.rows, self.cols))
-        self.m8 = get_m8(self.artificial_data)
-        self.cov = get_cov8(self.artificial_data, self.m8)
+        self.m8 = get_m8(self.artificial_data, self.statistical_method)
+        self.cov = get_cov8(self.artificial_data, self.m8, self.statistical_method)
 
         for band in range(self.bands):
             self.artificial_data[:, :, band] = self.artificial_data[:, :, band] / np.sqrt(self.cov[band, band],
@@ -103,14 +103,14 @@ class ArtificialHyperspectralCube:
 
         self.artificial_data = np.array(self.artificial_data) + self.y_mean
 
-        self.m8 = get_m8(self.artificial_data)
-        self.cov = get_cov8(self.artificial_data, self.m8)
+        self.m8 = get_m8(self.artificial_data, self.statistical_method)
+        self.cov = get_cov8(self.artificial_data, self.m8, self.statistical_method)
         # self.nu = find_nu(self.data, self.m8, self.cov, method=nu_method)
 
         # T cube ############
         self.t, _ = get_pca(self.artificial_data, self.m8, self.cov)
-        self.t_mean = get_m8(self.t)
-        self.t_cov = get_cov8(self.t, self.t_mean)
+        self.t_mean = get_m8(self.t, self.statistical_method)
+        self.t_cov = get_cov8(self.t, self.t_mean, self.statistical_method)
         # self.t_nu = find_nu(self.t, self.t_mean, self.t_cov, method=nu_method)
 
         # Q cube ############
@@ -118,8 +118,8 @@ class ArtificialHyperspectralCube:
         for r in range(self.rows):
             for c in range(self.cols):
                 self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
-        self.q_mean = get_m8(self.q)
-        self.q_cov = get_cov8(self.q, self.q_mean)
+        self.q_mean = get_m8(self.q, self.statistical_method)
+        self.q_cov = get_cov8(self.q, self.q_mean, self.statistical_method)
         # self.q_nu = find_nu(self.q, self.q_mean, self.q_cov, method=nu_method)
 
 
