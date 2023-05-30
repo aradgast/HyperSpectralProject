@@ -59,8 +59,14 @@ class ArtificialHyperspectralCube:
         self.g = np.zeros(shape=(self.rows, self.cols, self.bands), dtype=PRECISION)
         for s in range(self.bands):
             self.g[:, :, s] = np.random.normal(loc=0, scale=1, size=(self.rows, self.cols))
-            self.g[:, :, s] = self.g[:, :, s] / np.sqrt(np.std(self.g[:, :, s]))
-            self.g[:, :, s] = self.g[:, :, s] * np.sqrt(self.y_cov[s, s], dtype=PRECISION)
+
+        self.g_mean = get_m8(self.g, self.statistical_method)
+        self.g_cov = get_cov8(self.g, self.g_mean, self.statistical_method)
+
+        for s in range(self.bands):
+            self.g[:, :, s] = self.g[:, :, s] / np.sqrt(self.g_cov[s, s])
+            self.g[:, :, s] = self.g[:, :, s] * np.sqrt(self.y_cov[s, s])
+
         self.g += self.y_mean
         self.g_mean = get_m8(self.g, self.statistical_method)
         self.g_cov = get_cov8(self.g, self.g_mean, self.statistical_method)
@@ -82,6 +88,12 @@ class ArtificialHyperspectralCube:
         self.q_nu = None
 
     def create_z_cube(self, nu_method='Constant'):
+        """ this function creates the artificial hyperspectral cube according to the original data
+        that was given by the header file.
+        :param nu_method: the method to estimate the df(degree of freedom) for the artificial hyperspectral cube
+        :return: None
+        """
+
         # self.nu_x = find_nu(self.cube, self.x_mean, self.x_cov, method=nu_method)
         self.nu_y = find_nu(self.y, self.y_mean, self.y_cov, method=nu_method)
 

@@ -12,10 +12,11 @@ from legends import *
 
 def get_pca(data, mean=None, cov=None):
     """This function calculate the PCA of the data cube to create un-correlated bands
-    param data: the data cube
-    param mean: the mean of the data cube
-    param cov: the covariance of the data cube
-    return: the PCA of the data cube"""
+    :param data: the data cube
+    :param mean: the mean of the data cube, if None the function will calculate it
+    :param cov: the covariance of the data cube, if None the function will calculate it
+    :return: the PCA of the data cube
+    """
 
     # get the shape of the cube
     row, col, bands = data.shape

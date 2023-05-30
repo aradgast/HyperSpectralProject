@@ -48,8 +48,8 @@ class HyperspectralDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
-        image = torch.from_numpy(self.images[index]).float()
-        label = torch.from_numpy(self.labels[index]).float()
+        image = torch.from_numpy(self.images[index]).double()
+        label = torch.from_numpy(self.labels[index]).double()
 
         if self.transform:
             image = self.transform(image)
@@ -103,7 +103,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
     train_losses = []  # To store the training loss values
     val_losses = []  # To store the validation loss values
-    best_valid_loss = float('inf')
+    best_valid_loss = np.inf()
 
     for epoch in range(num_epochs):
         model.train()
@@ -126,7 +126,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
             optimizer.step()
 
             train_loss += loss.item() * inputs.size(0)
-            idx +=1
+            idx += 1
 
             if idx % 100 == 0:
                 print(f"Epoch {epoch + 1}/{num_epochs} | Iteration {idx} | Train Loss: {train_loss / idx:.4f}")
@@ -157,7 +157,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
         if val_loss < best_valid_loss:
             best_valid_loss = val_loss
-            torch.save(model.state_dict(), 'best_model.pt')
+            torch.save(model.state_dict(), f'best_model_E_{epoch}.pt')
             print('Saved the best model!')
 
     # Plot the learning curves
@@ -172,7 +172,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
 if __name__ == "__main__":
     # Generate a random image
-    sample_size = 30000
+    sample_size = 10000
     images, labels = generate_hyperspectral_image(sample_size)
     images_train, images_test, labels_train, labels_test = train_test_split(images, labels, test_size=0.1,
                                                                             random_state=42)

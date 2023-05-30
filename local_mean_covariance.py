@@ -16,6 +16,7 @@ def get_m8(cube, method='local'):
      include the case when the pixel is on the edge and
     the cube are a 3D
     :param cube: the cube of the image
+    :param method: the method of calculating the 8 neighbors average or global mean.
     :return: the 8 neighbors average cube in this shape"""
 
     row_num, col_num, band_num = cube.shape
@@ -63,6 +64,7 @@ def get_cov8(cube, m8_cube = None, method='local'):
     """this function calculate the covariance matrix of the cube using the 8 neighbors average
     :param cube: the cube of the image
     :param m8: the 8 neighbors average cube
+    :param method: the method of calculating the 8 neighbors average or global mean.
     :return: the covariance matrix of the cube"""
 
     if m8_cube is None:

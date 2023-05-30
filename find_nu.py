@@ -17,11 +17,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def find_nu(cube, mean_matrix, cov, method='Constant'):
-    '''return the nu vector for the given cube.
-    to possible methodas for finding nu:
-    1. estimate nu based on james tyler formula
-    2. create a cube of t-distribution and find the nu for each band
-    '''
+    """return the nu vector for the given cube.
+    to possible methods for finding nu:\n
+    ['Tyler', 'KS', 'Constant2', 'Constant3', 'MLE', 'NN']
+    :param cube: the given cube
+    :param mean_matrix: the mean matrix of the given cube
+    :param cov: the covariance matrix of the given cube
+    :param method: the method for finding nu
+    :return: nu vector
+    """
     # 1. estimate nu based on james tyler formula
     if method == 'Tyler':
         bands = cube.shape[2]
