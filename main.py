@@ -13,43 +13,43 @@ import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
-    header = 'data\self_test_rad.hdr'                   # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    statistical_method = 'global'                       # 'global', 'local'
-    name = f'RIT_with_gaussian_{statistical_method}'    # 'ViaReggio', 'RIT'
-    # method = 'Constant2'                              # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
-    methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
-    z = ArtificialHyperspectralCube(header, statistical_method='statistical_method')
-    mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
-    mf_res_g = matched_filter(0.065, z.g, z.g_mean, z.g_cov, z.y[4, 2].reshape(1, 1, -1))
-    stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-    stats_g = calc_stats(mf_res_g[0], mf_res_g[1])
+    # header = 'data\D1_F12_H1_Cropped.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    # statistical_method = 'global'                               # 'global', 'local'
+    # name = f'ViaReggio_with_gaussian_{statistical_method}'      # 'ViaReggio', 'RIT'
+    method = 'Constant2'                                      # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
+    # methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
+    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    # mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+    # mf_res_g = matched_filter(0.065, z.g, z.g_mean, z.g_cov, z.y[4, 2].reshape(1, 1, -1))
+    # stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+    # stats_g = calc_stats(mf_res_g[0], mf_res_g[1])
+    #
+    # for method in methods:
+    #     print("############################################################################################################")
+    #     print(f"Method: {method}")
+    #     print("############################################################################################################")
+    #     z.create_z_cube(method)
+    #     print("Matched filter:")
+    #     print(f"X peak distance: {np.round(mf_res_x[2], 3)}")
+    #     mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+    #     print(f"Q peak distance: {np.round(mf_res_q[2], 3)}")
+    #     print(f"G peak distance: {np.round(mf_res_g[2], 3)}")
+    #
+    #     stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
 
-    for method in methods:
-        print("############################################################################################################")
-        print(f"Method: {method}")
-        print("############################################################################################################")
-        z.create_z_cube(method)
-        print("Matched filter:")
-        print(f"X peak distance: {np.round(mf_res_x[2], 3)}")
-        mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
-        print(f"Q peak distance: {np.round(mf_res_q[2], 3)}")
-        print(f"G peak distance: {np.round(mf_res_g[2], 3)}")
-
-        stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-        #
-        plot_stats(3, [stats_x[0], stats_q[0], stats_g[0]],
-                   [stats_x[1], stats_q[1], stats_g[1]],
-                   [stats_x[2], stats_q[2], stats_g[2]],
-                   [stats_x[3], stats_q[3], stats_g[3]],
-                   [stats_x[4], stats_q[4], stats_g[4]],
-                   ['Original data', 'Artificial data', 'Gaussian method'], 'MF', name, method)
-
-    ###################################################################################################################
+        # plot_stats(3, [stats_x[0], stats_q[0], stats_g[0]],
+        #            [stats_x[1], stats_q[1], stats_g[1]],
+        #            [stats_x[2], stats_q[2], stats_g[2]],
+        #            [stats_x[3], stats_q[3], stats_g[3]],
+        #            [stats_x[4], stats_q[4], stats_g[4]],
+        #            ['Original data', 'Artificial data', 'Gaussian method'], 'MF', name, method)
+    #
+    ##################################################################################################################
     # simulation for checking the DOF estimation methods.
 
     # size_of_simulation = 150
     # size_of_matrix = 300
-    # methods = ['NN', 'MLE', 'Tyler']
+    # methods = ['NN', 'MLE', 'Tyler', 'KS']
     # true_nu = []
     # cube = np.zeros((size_of_matrix, size_of_matrix, size_of_simulation)).astype(np.single)
     # for s in range(size_of_simulation):
@@ -60,17 +60,48 @@ if __name__ == "__main__":
     # cov8_cube = get_cov8(cube, m8_cube)
     # print("Done with creating the data.")
     # plt.figure()
-    # plt.plot([_ for _ in range(size_of_simulation)], true_nu, label='True nu')
+    # plt.semilogy([_ for _ in range(size_of_simulation)], true_nu, label='True nu', color='black', linestyle='--', linewidth=2)
     # for method in methods:
     #     print(f"Method: {method}")
     #     nu = find_nu(cube, m8_cube, cov8_cube, method)
-    #     plt.plot([_ for _ in range(size_of_simulation)], nu, label=method)
+    #     plt.semilogy([_ for _ in range(size_of_simulation)], nu, label=method)
     #     print(f"Done with: {method}")
     # plt.title("DOF estimation with different methods")
     # plt.legend()
     # plt.grid()
     # plt.savefig("plots/DOF estimation with different methods.png")
     # plt.show()
+
+    ##################################################################################################################
+    # simulation for checking the DOF estimation methods. now increasing the real DOF by 1 in each simulation
+    lenght_of_simulation = 150
+    true_label = np.linspace(2, 50, lenght_of_simulation)
+    size_of_matrix = 300
+    methods = ['NN', 'MLE', 'Tyler', 'KS']
+    estimated_label = {_: [] for _ in methods}
+    cube = np.zeros((size_of_matrix, size_of_matrix, lenght_of_simulation)).astype(np.single)
+    for band, nu in enumerate(true_label):
+        cube[:, :, band] = t_dist.rvs(nu, loc=0, scale=1, size=(size_of_matrix, size_of_matrix)).astype(np.single)
+    m8 = get_m8(cube)
+    cov8 = get_cov8(cube, m8)
+    print("Done with creating the data.")
+    for method in methods:
+        print(f"Method: {method}")
+        estimated_label[method].append(find_nu(cube, m8, cov8, method))
+        print(f"Done with: {method}")
+    # plot the results
+    plt.figure()
+    for method in methods:
+        plt.plot(true_label, estimated_label[method], label=method)
+    plt.title("DOF estimation with different methods")
+    plt.xlabel("True DOF")
+    plt.ylabel("Estimated DOF")
+    plt.legend()
+    plt.grid()
+    plt.savefig("plots/DOF estimation with different methods for increasing Nu.png")
+    plt.show()
+
+
 
 
 

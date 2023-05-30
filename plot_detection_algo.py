@@ -59,7 +59,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[0,0].set_ylabel('Number of samples')
         ax[0,0].set_xlabel('Detection score')
         ax[0, 0].grid()
-        ax[0, 0].legend()
+        ax[0, 0].legend(loc='upper right')
         try:
             ax[0, 1].plot(hist_wt[i][1][1:], np.log10(hist_wt[i][0]),
                           label=f'{legends[i]}_WT', color=colors[i], linewidth=number_of_cubes - i)
@@ -70,7 +70,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
             ax[0, 1].set_ylabel('log10(Number of samples)')
             ax[0, 1].set_xlabel('Detection score')
             ax[0, 1].grid()
-            ax[0, 1].legend()
+            ax[0, 1].legend(loc='upper right')
         except Exception as e:
             print(e)
 
@@ -83,7 +83,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[1, 0].set_ylabel('Probability')
         ax[1, 0].set_xlabel('Detection score')
         ax[1, 0].grid()
-        ax[1, 0].legend()
+        ax[1, 0].legend(loc='lower left')
 
         idx = len(fpr[i][fpr[i] <= 0.01])
         roc_auc = auc(fpr[i][:idx], tpr[i][:idx])
@@ -100,7 +100,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[1, 1].set_ylabel('True Positive Rate')
         ax[1, 1].set_xlim([0, 0.01])
         ax[1, 1].grid()
-        ax[1, 1].legend()
+        ax[1, 1].legend(loc='lower right')
 
     ax[0, 0].set_title(title1)
     ax[0, 1].set_title(title2)
