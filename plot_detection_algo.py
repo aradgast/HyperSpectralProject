@@ -31,7 +31,7 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
     return histogram_wt, histogram_nt, fpr, tpr, thresholds
 
 
-def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF', name='ViaReggio', method='Constant2'):
+def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF', name='ViaReggio'):
     """this function plots the results of the detection algorithm
     axis - the axis of the cumulative probability
     hist_wt - the histogram of the WT
@@ -59,7 +59,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[0,0].set_ylabel('Number of samples')
         ax[0,0].set_xlabel('Detection score')
         ax[0, 0].grid()
-        ax[0, 0].legend(loc='upper right')
+        ax[0, 0].legend(loc='upper left')
         try:
             ax[0, 1].plot(hist_wt[i][1][1:], np.log10(hist_wt[i][0]),
                           label=f'{legends[i]}_WT', color=colors[i], linewidth=number_of_cubes - i)
@@ -70,7 +70,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
             ax[0, 1].set_ylabel('log10(Number of samples)')
             ax[0, 1].set_xlabel('Detection score')
             ax[0, 1].grid()
-            ax[0, 1].legend(loc='upper right')
+            ax[0, 1].legend(loc='upper left')
         except Exception as e:
             print(e)
 
@@ -107,7 +107,7 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
     ax[1, 0].set_title(title3)
     ax[1, 1].set_title(title4)
     fig.tight_layout()
-    plt.savefig(f'plots/{name}_{algo_name}_{method}_results.png')
+    plt.savefig(f'{name}')
     plt.show()
 
 

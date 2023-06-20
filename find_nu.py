@@ -16,7 +16,7 @@ import torchvision.transforms as transforms
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def find_nu(cube, mean_matrix, cov, method='Constant'):
+def find_nu(cube, mean_matrix, cov, method='Constant2'):
     """return the nu vector for the given cube.
     to possible methods for finding nu:\n
     ['Tyler', 'KS', 'Constant2', 'Constant3', 'MLE', 'NN']
@@ -65,8 +65,41 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
     elif method == 'Constant2':
         nu = np.ones((cube.shape[2], 1)) * 2
 
+    elif method == 'Constant2.5':
+        nu = np.ones((cube.shape[2], 1)) * 2.5
+
     elif method == 'Constant3':
         nu = np.ones((cube.shape[2], 1)) * 3
+
+    elif method == 'Constant3.5':
+        nu = np.ones((cube.shape[2], 1)) * 3.5
+
+    elif method == 'Constant4':
+        nu = np.ones((cube.shape[2], 1)) * 4
+
+    elif method == 'Constant4.5':
+        nu = np.ones((cube.shape[2], 1)) * 4.5
+
+    elif method == 'Constant5':
+        nu = np.ones((cube.shape[2], 1)) * 5
+
+    elif method == 'Constant5.5':
+        nu = np.ones((cube.shape[2], 1)) * 5.5
+
+    elif method == 'Constant6':
+        nu = np.ones((cube.shape[2], 1)) * 6
+
+    elif method == 'Constant6.5':
+        nu = np.ones((cube.shape[2], 1)) * 6.5
+
+    elif method == 'Constant7':
+        nu = np.ones((cube.shape[2], 1)) * 7
+
+    elif method == 'Constant7.5':
+        nu = np.ones((cube.shape[2], 1)) * 7.5
+
+    elif method == 'Constant8':
+        nu = np.ones((cube.shape[2], 1)) * 8
 
     elif method == 'MLE':
         nu = np.zeros((cube.shape[2], 1))
@@ -99,20 +132,20 @@ def find_nu(cube, mean_matrix, cov, method='Constant'):
 
 
 if __name__ == "__main__":
-    weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject//best_model.pt"
+    weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject\weights\best_model.pt"
     net = DOFNet()
     net.load_state_dict(torch.load(weights_path, map_location=device))
     print(net)
-    net.eval()
-    net.to(device)
-    import spectral as spy
-    data = spy.open_image('self_test_rad.hdr')
-    # convert the data to a numpy array
-    data = np.array(data.open_memmap())
-    data = data[:, :, 0:5].astype(np.float32)
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Resize((224, 224))])
-    data = transform(data).to(device)
-    output = net(data)
-    print(output)
+    # net.eval()
+    # net.to(device)
+    # import spectral as spy
+    # data = spy.open_image('self_test_rad.hdr')
+    # # convert the data to a numpy array
+    # data = np.array(data.open_memmap())
+    # data = data[:, :, 0:5].astype(np.float32)
+    # transform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.Resize((224, 224))])
+    # data = transform(data).to(device)
+    # output = net(data)
+    # print(output)

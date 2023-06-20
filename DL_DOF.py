@@ -11,7 +11,17 @@ import matplotlib.pyplot as plt
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+class StudentT_NLLLoss(nn.Module):
+    def _init_(self):
+        super(StudentT_NLLLoss, self)._init_()
 
+    def forward(self, y_pred, y_true):
+        # Calculate the negative log-likelihood loss
+        loss = torch.lgamma((y_true + 1) / 2) - torch.lgamma(y_true / 2)
+        loss += 0.5 * (torch.log(y_true * np.pi) + torch.log1p((y_pred - y_true)**2 / y_true))
+        loss = loss.mean()
+
+        return loss
 def generate_hyperspectral_image(num_of_sampels: int, size_of_image: int = 224) -> (list, list):
     """
     Generate a random hyperspectral image
@@ -23,7 +33,7 @@ def generate_hyperspectral_image(num_of_sampels: int, size_of_image: int = 224) 
     labels = []
 
     for _ in range(num_of_sampels):
-        dof = np.random.uniform(2, 50, 1)
+        dof = np.random.uniform(2, 30, 1)
         image = t.rvs(dof, size=image_sizes)
         images.append(image)
         labels.append(dof)
@@ -103,7 +113,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
     train_losses = []  # To store the training loss values
     val_losses = []  # To store the validation loss values
-    best_valid_loss = np.inf()
+    best_valid_loss = np.inf
 
     for epoch in range(num_epochs):
         model.train()
@@ -157,7 +167,7 @@ def train(model, train_dataloader, test_dataloader, criterion, optimizer, num_ep
 
         if val_loss < best_valid_loss:
             best_valid_loss = val_loss
-            torch.save(model.state_dict(), f'best_model_E_{epoch}.pt')
+            torch.save(model.state_dict(), r"weights\r"+f'best_model_E_{epoch}_customLoss.pt')
             print('Saved the best model!')
 
     # Plot the learning curves
@@ -190,16 +200,17 @@ if __name__ == "__main__":
 
 
     # Parameters
-    num_epochs = 10
-    learning_rate = 0.001
+    num_epochs = 20
+    learning_rate = 0.0001
 
     # Create the model
     model = DOFNet().to(device)
-    model.load_state_dict(torch.load('best_model.pt'))
+    # model.load_state_dict(torch.load('best_model.pt'))
 
     # Define loss function and optimizer
-    criterion = nn.MSELoss()
+    # criterion = nn.MSELoss()
+    criterion = StudentT_NLLLoss()
     optimizer = Adam(model.parameters(), lr=learning_rate)
-
+    print("Starting training...")
     # Call the train function
     train(model, train_dataloader,test_dataloader, criterion, optimizer, num_epochs)
