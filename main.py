@@ -201,3 +201,25 @@ if __name__ == "__main__":
     plt.show()
     print("Done with the simulation.")
 ##################################################################################################################
+    # Simulation : show histogram of real and artificial data using constant DOF method.
+    headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    name = ["ViaReggio", "RIT"]
+    statistical_method = 'local'                               # 'global', 'local'
+    methods = ["Constant2", "Constant2.5", "Constant3", "Constant3.5", "Constant4", "Constant4.5", "Constant5", "Constant5.5", "Constant6", "Constant6.5", "Constant7", "Constant7.5", "Constant8"]
+    header = "data/" + headers[1]
+    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    for method in methods:
+        z.create_z_cube(method)
+        plt.figure()
+        plt.subplots(1, 2, figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.hist(z.q[:, :, 50].flatten(), bins=100, label="artificial data")
+        plt.subplot(1, 2, 2)
+        plt.hist(z.y[:, :, 50].flatten(), bins=100, label="real data")
+        plt.title(f"Histogram of real and artificial data using {method} method - band 50")
+        plt.xlabel("Pixel value")
+        plt.ylabel("Number of pixels")
+        plt.legend()
+        plt.grid()
+        plt.savefig(f"plots/Histogram of real and artificial data using {method} method_{name[1]}_band50.png")
+        plt.show()
