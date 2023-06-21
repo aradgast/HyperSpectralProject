@@ -112,10 +112,14 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
 
     elif method == 'MLE':
         nu = np.zeros((cube.shape[2], 1))
-        for band in range(cube.shape[2]):
-            stats = t_dist.fit((cube[:, :, band]-mean_matrix[:, :, band]).flatten())
-            nu[band] = stats[0]
-
+        if len(mean_matrix.shape) == 3:
+            for band in range(cube.shape[2]):
+                stats = t_dist.fit((cube[:, :, band]-mean_matrix[:, :, band]).flatten())
+                nu[band] = stats[0]
+        elif len(mean_matrix.shape) == 2 or len(mean_matrix.shape) == 1:
+            for band in range(cube.shape[2]):
+                stats = t_dist.fit((cube[:, :, band] - mean_matrix[band]).flatten())
+                nu[band] = stats[0]
     elif method == 'NN':
         weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject\weights//best_model.pt"
         net = DOFNet()
