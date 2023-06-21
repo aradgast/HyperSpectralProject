@@ -50,7 +50,7 @@ class ArtificialHyperspectralCube:
         self.x_mean = get_m8(self.cube)
         self.x_cov = get_cov8(self.cube, self.x_mean)
 
-        self.y, self.x_eigvec = get_pca(self.cube, self.x_mean, self.x_cov)
+        self.y, self.x_upscaled_eigvec = get_pca(self.cube, self.x_mean, self.x_cov)
 
         self.y_mean = get_m8(self.y)
         self.y_cov = get_cov8(self.y, self.y_mean)
@@ -129,7 +129,7 @@ class ArtificialHyperspectralCube:
         self.q = np.zeros(shape=(self.rows, self.cols, self.bands), dtype=PRECISION)
         for r in range(self.rows):
             for c in range(self.cols):
-                self.q[r, c, :] = np.matmul(self.x_eigvec, self.t[r, c, :])
+                self.q[r, c, :] = np.matmul(self.x_upscaled_eigvec, self.t[r, c, :])
         self.q_mean = get_m8(self.q, self.statistical_method)
         self.q_cov = get_cov8(self.q, self.q_mean, self.statistical_method)
         # self.q_nu = find_nu(self.q, self.q_mean, self.q_cov, method=nu_method)

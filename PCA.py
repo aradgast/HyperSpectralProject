@@ -29,13 +29,14 @@ def get_pca(data, mean=None, cov=None):
     eigval, eigvec = np.linalg.eig(cov)
 
     scale_eigvec = np.matmul(np.linalg.inv(np.diag(np.sqrt(eigval))), eigvec.T, dtype=PRECISION)
+    upscale_eigvec = np.matmul(np.diag(np.sqrt(eigval)), eigvec.T, dtype=PRECISION)
 
     # project the data
     for r in range(row):
         for c in range(col):
             cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype=PRECISION)
 
-    return cube, eigvec
+    return cube, upscale_eigvec
 
 
 if __name__ == "__main__":

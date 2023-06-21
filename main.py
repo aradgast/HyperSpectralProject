@@ -14,25 +14,24 @@ from sklearn.metrics import roc_curve, auc
 warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
-    # header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    # statistical_method = 'local'                               # 'global', 'local'
-    # name = f'RIT_with_gaussian_{statistical_method}'      # 'ViaReggio', 'RIT'
-    # method = 'Constant2'                                      # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
+    header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    statistical_method = 'global'                               # 'global', 'local'
+    name = f'RIT_with_{statistical_method}_last_try'      # 'ViaReggio', 'RIT'
+    method = 'MLE'                                      # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
     # methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
-    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    # z.create_z_cube(method)
-    # mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
-    # mf_res_g = matched_filter(0.065, z.g, z.g_mean, z.g_cov, z.y[4, 2].reshape(1, 1, -1))
-    # mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
-    # stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-    # stats_g = calc_stats(mf_res_g[0], mf_res_g[1])
-    # stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-    # plot_stats(3, [stats_x[0], stats_q[0], stats_g[0]],
-    #            [stats_x[1], stats_q[1], stats_g[1]],
-    #            [stats_x[2], stats_q[2], stats_g[2]],
-    #            [stats_x[3], stats_q[3], stats_g[3]],
-    #            [stats_x[4], stats_q[4], stats_g[4]],
-    #            ["Original data", "Artificial data", "Gaussian method"],"MF", name, method)
+    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    z.create_z_cube(method)
+    mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+    mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+    stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+    stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+    plot_stats(2, [stats_x[0], stats_q[0]],
+               [stats_x[1], stats_q[1]],
+               [stats_x[2], stats_q[2]],
+               [stats_x[3], stats_q[3]],
+               [stats_x[4], stats_q[4]],
+               ["Original data", "Artificial data", "Gaussian method"], "MF", name)
+    print("DONE MF")
     #
     # for method in methods:
     #     print("############################################################################################################")
@@ -214,14 +213,14 @@ if __name__ == "__main__":
     # print("Done with the simulation.")
 # ##################################################################################################################
 #     # Simulation : show histogram of real and artificial data using constant DOF method.
-    headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    name = ["ViaReggio", "RIT"]
-    statistical_method = 'local'                               # 'global', 'local'
-    method = "MLE"
-    header = "data/" + headers[1]
-    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    z.create_z_cube(method)
-    nu_x = find_nu(z.cube-z.x_mean, z.x_mean, z.x_cov, method)
+#     headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+#     name = ["ViaReggio", "RIT"]
+#     statistical_method = 'local'                               # 'global', 'local'
+#     method = "MLE"
+#     header = "data/" + headers[1]
+#     z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+#     z.create_z_cube(method)
+    nu_x = find_nu(z.cube, z.x_mean, z.x_cov, method)
     nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
     nu_q = find_nu(z.q, z.q_mean, z.q_cov, method)
     plt.figure()
