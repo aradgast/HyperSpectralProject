@@ -150,76 +150,123 @@ if __name__ == "__main__":
 
 ##################################################################################################################
     # Simulation : create artificial cube using MLE method and plot the DOF vector results.
-    headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    statistical_method = 'local'                               # 'global', 'local'
-    method = 'MLE'
-    plt.figure()
-    header = "data/" + headers[1]
-    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    z.create_z_cube(method)
-    plt.plot(z.nu_y, label="estimated on Y")
-    nu_q = find_nu(z.q, z.q_mean, z.q_cov, method)
-    plt.plot(nu_q, label="estimated on Q")
-    plt.title(f"DOF estimation using {method} method")
-    plt.xlabel("Band number")
-    plt.ylabel("DOF")
-    plt.legend()
-    plt.grid()
-    plt.savefig(f"plots/DOF estimation values using {method} method_RIT.png")
-    plt.show()
-    print("Done with the simulation.")
+    # headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    # statistical_method = 'local'                               # 'global', 'local'
+    # method = 'MLE'
+    # header = "data/" + headers[1]
+    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    # z.create_z_cube(method)
+    # nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
+    # nu_q = find_nu(z.t, z.t_mean, z.t_cov, method)
+    # plt.figure()
+    # plt.plot(z.nu_y, label="estimated on Y")
+    # plt.plot(nu_z, label="estimated on Z")
+    # plt.title(f"DOF estimation using {method} method")
+    # plt.xlabel("Band number")
+    # plt.ylabel("DOF")
+    # plt.legend()
+    # plt.grid()
+    # plt.savefig(f"plots/DOF estimation values linear scale using {method} method_RIT.png")
+    # plt.show()
+
+    # plt.figure()
+    # plt.semilogy(z.nu_y, label="estimated on Y")
+    # plt.semilogy(nu_z, label="estimated on Z")
+    # plt.title(f"DOF estimation using {method} method")
+    # plt.xlabel("Band number")
+    # plt.ylabel("DOF")
+    # plt.legend()
+    # plt.grid()
+    # plt.savefig(f"plots/DOF estimation values log scale using {method} method_RIT.png")
+    # plt.show()
+    # print("Done with the simulation.")
 ##################################################################################################################
     # Simulation : create artificial cube using diffreent values of constant DOF and plot the AUC results.
-    headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    statistical_method = 'local'                               # 'global', 'local'
-    methods = ['Constant2', 'Constant2.5', 'Constant3', 'Constant3.5', 'Constant4', 'Constant4.5', 'Constant5', 'Constant5.5', 'Constant6', 'Constant6.5', 'Constant7', 'Constant7.5', 'Constant8']
-    header = "data/" + headers[1]
-    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
-    stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-    fpr = stats_x[2]
-    tpr = stats_x[3]
-    idx = len(fpr[fpr <= 0.01])
-    roc_auc_x = auc(fpr[:idx], tpr[:idx])
-    relativec_err = []
-    for method in methods:
-        z.create_z_cube(method)
-        mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
-        stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-        fpr = stats_q[2]
-        tpr = stats_q[3]
-        idx = len(fpr[fpr <= 0.01])
-        roc_auc_q = auc(fpr[:idx], tpr[:idx])
-        relativec_err.append((np.abs(roc_auc_q - roc_auc_x) / roc_auc_x) * 100)
-    plt.figure()
-    plt.plot([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,6, 6.5, 7, 7.5, 8], relativec_err)
-    plt.title(f"Relative error in AUC for different constant DOF values")
-    plt.xlabel("Constant DOF value")
-    plt.ylabel("Relative error in AUC (%)")
-    plt.grid()
-    plt.savefig(f"plots/Relative error in AUC for different constant DOF values_RIT.png")
-    plt.show()
-    print("Done with the simulation.")
-##################################################################################################################
-    # Simulation : show histogram of real and artificial data using constant DOF method.
+    # headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    # statistical_method = 'local'                               # 'global', 'local'
+    # methods = ['Constant2', 'Constant2.5', 'Constant3', 'Constant3.5', 'Constant4', 'Constant4.5', 'Constant5', 'Constant5.5', 'Constant6', 'Constant6.5', 'Constant7', 'Constant7.5', 'Constant8']
+    # header = "data/" + headers[1]
+    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    # mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+    # stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+    # fpr = stats_x[2]
+    # tpr = stats_x[3]
+    # idx = len(fpr[fpr <= 0.01])
+    # roc_auc_x = auc(fpr[:idx], tpr[:idx])
+    # relativec_err = []
+    # for method in methods:
+    #     z.create_z_cube(method)
+    #     mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+    #     stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+    #     fpr = stats_q[2]
+    #     tpr = stats_q[3]
+    #     idx = len(fpr[fpr <= 0.01])
+    #     roc_auc_q = auc(fpr[:idx], tpr[:idx])
+    #     relativec_err.append((np.abs(roc_auc_q - roc_auc_x) / roc_auc_x) * 100)
+    # plt.figure()
+    # plt.plot([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,6, 6.5, 7, 7.5, 8], relativec_err)
+    # plt.title(f"Relative error in AUC for different constant DOF values")
+    # plt.xlabel("Constant DOF value")
+    # plt.ylabel("Relative error in AUC (%)")
+    # plt.grid()
+    # plt.savefig(f"plots/Relative error in AUC for different constant DOF values_RIT.png")
+    # plt.show()
+    # print("Done with the simulation.")
+# ##################################################################################################################
+#     # Simulation : show histogram of real and artificial data using constant DOF method.
     headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
     name = ["ViaReggio", "RIT"]
     statistical_method = 'local'                               # 'global', 'local'
-    methods = ["Constant2", "Constant2.5", "Constant3", "Constant3.5", "Constant4", "Constant4.5", "Constant5", "Constant5.5", "Constant6", "Constant6.5", "Constant7", "Constant7.5", "Constant8"]
+    method = "MLE"
     header = "data/" + headers[1]
     z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    for method in methods:
-        z.create_z_cube(method)
+    z.create_z_cube(method)
+    nu_x = find_nu(z.cube-z.x_mean, z.x_mean, z.x_cov, method)
+    nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
+    nu_q = find_nu(z.q, z.q_mean, z.q_cov, method)
+    plt.figure()
+    plt.semilogy(nu_x, label="real data before PCA")
+    plt.semilogy(z.nu_y, label="real data after PCA")
+    plt.semilogy(nu_z, label="artificial data before PCA")
+    plt.semilogy(nu_q, label="artificial data after PCA")
+    plt.title(f"Comparing Nu values for real and artificial data")
+    plt.xlabel("Band number")
+    plt.ylabel("Nu - log scale")
+    plt.legend()
+    plt.grid()
+    plt.savefig(f"plots/Comparing Nu values for real and artificial data_RIT.png")
+    plt.show()
+
+    for band in [0, 9, 19, 49, 99]:
         plt.figure()
         plt.subplots(1, 2, figsize=(10, 5))
         plt.subplot(1, 2, 1)
-        plt.hist(z.q[:, :, 50].flatten(), bins=100, label="artificial data")
-        plt.subplot(1, 2, 2)
-        plt.hist(z.y[:, :, 50].flatten(), bins=100, label="real data")
-        plt.title(f"Histogram of real and artificial data using {method} method - band 50")
+        plt.hist((z.q[:, :, band]-z.q_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
+        plt.title("Histogram of artificial data - final cube")
         plt.xlabel("Pixel value")
         plt.ylabel("Number of pixels")
         plt.legend()
         plt.grid()
-        plt.savefig(f"plots/Histogram of real and artificial data using {method} method_{name[1]}_band50.png")
+        plt.subplot(1, 2, 2)
+        plt.hist((z.cube[:, :, band]-z.x_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
+        plt.title("Histogram of real data - m8")
+        plt.xlabel("Pixel value")
+        plt.ylabel("Number of pixels")
+        plt.legend()
+        plt.grid()
+        plt.savefig(f"plots/Histogram of real and artificial data using {method} method_{name[1]}_band_{band+1}.png")
         plt.show()
+    print("Done with the simulation.")
+#################################################################################################################
+    # Simulation : check if the DOF estimation is correct for diffreent values of constant std.
+    # sample_size = 20000
+    # smaple_1 = t_dist.rvs(2, loc=0, scale=1, size=sample_size)
+    # smaple_10 = t_dist.rvs(2, loc=0, scale=10, size=sample_size)
+    # smaple_100 = t_dist.rvs(2, loc=0, scale=100, size=sample_size)
+    # stats_1 = t_dist.fit(smaple_1)
+    # stats_10 = t_dist.fit(smaple_10)
+    # stats_100 = t_dist.fit(smaple_100)
+    # print("for std = 1, DOF = ", stats_1[0])
+    # print("for std = 10, DOF = ", stats_10[0])
+    # print("for std = 100, DOF = ", stats_100[0])
+    # print("Done with the simulation.")
