@@ -9,6 +9,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import roc_curve, auc
+import datetime
+
 
 def calc_stats(target_cube, no_target_cube, bins=1000):
     """this function calculates the statistics of the detection algorithm
@@ -31,7 +33,8 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
     return histogram_wt, histogram_nt, fpr, tpr, thresholds
 
 
-def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=['X'], algo_name='MF', name='ViaReggio'):
+def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
+               legends=None, algo_name='MF', name_of_the_plot=None, save_fig=True):
     """this function plots the results of the detection algorithm
     axis - the axis of the cumulative probability
     hist_wt - the histogram of the WT
@@ -42,13 +45,24 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
     algo_name - the name of the algorithm
 
     returns: None"""
+    number_of_cubes = len(hist_wt)
+    if len(hist_wt) != len(hist_nt):
+        raise ValueError('hist_wt and hist_nt must have the same length')
+    if len(fpr) != len(tpr):
+        raise ValueError('fpr and tpr must have the same length')
+    if legends is None:
+        print('legends is None, using default legends')
+        legends = ['Cube ' + str(i) for i in range(number_of_cubes)]
+    if name_of_the_plot is None:
+        print('name_of_the_plot is None, using default name')
+        name_of_the_plot = f"plot_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     title1 = f'{algo_name} - histogram results'
     title2 = f'{algo_name} - log10 histogram results'
     title3 = f'{algo_name} - inverse cumulative probability'
     title4 = f'{algo_name} - ROC curve with limited pfa'
-    colors = ['g', 'b', 'r', 'k', 'c', 'm','y', 'w']
+    colors = ['g', 'b', 'r', 'k', 'c', 'm', 'y', 'w']
 
     for i in range(number_of_cubes):
         ax[0, 0].plot(hist_wt[i][1][1:], hist_wt[i][0],
@@ -56,8 +70,8 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         ax[0, 0].plot(hist_nt[i][1][1:], hist_nt[i][0],
                       '--', label=f'{legends[i]}_NT', color=colors[i], linewidth=number_of_cubes - i)
         ax[0, 0].set_xlim(-1000, 1000)
-        ax[0,0].set_ylabel('Number of samples')
-        ax[0,0].set_xlabel('Detection score')
+        ax[0, 0].set_ylabel('Number of samples')
+        ax[0, 0].set_xlabel('Detection score')
         ax[0, 0].grid()
         ax[0, 0].legend(loc='upper left')
         try:
@@ -88,14 +102,16 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
         idx = len(fpr[i][fpr[i] <= 0.01])
         roc_auc = auc(fpr[i][:idx], tpr[i][:idx])
         print(f"the AUC for {legends[i]} is {roc_auc}")
-        if legends[i] == 'Original data':
+        if i == 0:
             ax[1, 1].plot(fpr[i], tpr[i],
-                      label=f"{legends[i]}: AUC = {np.round(roc_auc,3)}", color=colors[i], linewidth=number_of_cubes - i)
+                          label=f"{legends[i]}: AUC = {np.round(roc_auc, 3)}", color=colors[i],
+                          linewidth=number_of_cubes - i)
             X_auc = roc_auc
         else:
             realtive_error = (np.abs(roc_auc - X_auc) / X_auc) * 100
             ax[1, 1].plot(fpr[i], tpr[i],
-                      label=f"{legends[i]}_rel_error AUC = {np.round(realtive_error,5)} %", color=colors[i], linewidth=number_of_cubes - i)
+                          label=f"{legends[i]}_rel_error AUC = {np.round(realtive_error, 5)} %", color=colors[i],
+                          linewidth=number_of_cubes - i)
         ax[1, 1].set_xlabel('False Positive Rate')
         ax[1, 1].set_ylabel('True Positive Rate')
         ax[1, 1].set_xlim([0, 0.01])
@@ -107,7 +123,8 @@ def plot_stats(number_of_cubes, hist_wt, hist_nt, fpr, tpr, thresholds, legends=
     ax[1, 0].set_title(title3)
     ax[1, 1].set_title(title4)
     fig.tight_layout()
-    plt.savefig(f'{name}')
+    if save_fig:
+        plt.savefig(f'{name_of_the_plot}')
     plt.show()
 
 
