@@ -1,5 +1,5 @@
 from detection_algo import matched_filter, ace, rx
-from ArtificialHyperspectral_class import ArtificialHyperspectralCube
+from ArtificialHyperspectral_class import ArtificialHyperspectralCube, HyperSpectralCube, ArtificialHSC
 from plot_detection_algo import plot_stats, calc_stats
 import spectral as spy
 from local_mean_covariance import get_m8, get_cov8
@@ -14,24 +14,56 @@ from sklearn.metrics import roc_curve, auc
 warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
-    header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    statistical_method = 'global'                               # 'global', 'local'
-    name = f'RIT_with_{statistical_method}_last_try'      # 'ViaReggio', 'RIT'
-    method = 'MLE'                                      # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
-    # methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
-    z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    z.create_z_cube(method)
-    mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
-    mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
-    stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-    stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-    plot_stats(2, [stats_x[0], stats_q[0]],
-               [stats_x[1], stats_q[1]],
-               [stats_x[2], stats_q[2]],
-               [stats_x[3], stats_q[3]],
-               [stats_x[4], stats_q[4]],
-               ["Original data", "Artificial data", "Gaussian method"], "MF", name)
-    print("DONE MF")
+    # NEW FORMATTING
+    original_data = HyperSpectralCube('data\self_test_rad.hdr')
+    original_data.calc_mean()
+    original_data.calc_cov()
+
+    pca_data = original_data.pca_transform()
+    pca_data.calc_mean()
+    pca_data.calc_cov()
+    pca_data.calc_nu("MLE")
+    artifcial_data = ArtificialHSC(pca_data.mean, pca_data.cov, pca_data.nu,
+                                   original_data.eigenvectors, original_data.eigenvalues,
+                                   original_data.rows, original_data.cols, original_data.bands)
+    artifcial_data.calc_mean()
+    artifcial_data.calc_cov()
+    artifcial_data.calc_nu("MLE")
+    print("done simulation")
+    # plot the DOF
+    plt.figure()
+    if original_data.nu is not None:
+        plt.plot(original_data.nu, label="original")
+    if pca_data.nu is not None:
+        plt.plot(pca_data.nu, label="pca")
+    if artifcial_data.nu is not None:
+        plt.plot(artifcial_data.nu, label="artificial")
+    plt.legend()
+    plt.title("DOF")
+    plt.xlabel("band")
+    plt.ylabel("DOF")
+    plt.show()
+
+
+
+    # header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+    # statistical_method = 'global'                               # 'global', 'local'
+    # name = f'RIT_with_{statistical_method}_last_try'      # 'ViaReggio', 'RIT'
+    # method = 'MLE'                                      # 'NN', 'MLE', 'Constant2', 'Constant3', 'KS', 'Tyler'
+    # # methods = ['NN', 'MLE', 'Constant2', 'KS', 'Tyler']
+    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+    # z.create_z_cube(method)
+    # mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+    # mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+    # stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+    # stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+    # plot_stats(2, [stats_x[0], stats_q[0]],
+    #            [stats_x[1], stats_q[1]],
+    #            [stats_x[2], stats_q[2]],
+    #            [stats_x[3], stats_q[3]],
+    #            [stats_x[4], stats_q[4]],
+    #            ["Original data", "Artificial data", "Gaussian method"], "MF", name)
+    # print("DONE MF")
     #
     # for method in methods:
     #     print("############################################################################################################")
@@ -220,42 +252,42 @@ if __name__ == "__main__":
 #     header = "data/" + headers[1]
 #     z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
 #     z.create_z_cube(method)
-    nu_x = find_nu(z.cube, z.x_mean, z.x_cov, method)
-    nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
-    nu_q = find_nu(z.q, z.q_mean, z.q_cov, method)
-    plt.figure()
-    plt.semilogy(nu_x, label="real data before PCA")
-    plt.semilogy(z.nu_y, label="real data after PCA")
-    plt.semilogy(nu_z, label="artificial data before PCA")
-    plt.semilogy(nu_q, label="artificial data after PCA")
-    plt.title(f"Comparing Nu values for real and artificial data")
-    plt.xlabel("Band number")
-    plt.ylabel("Nu - log scale")
-    plt.legend()
-    plt.grid()
-    plt.savefig(f"plots/Comparing Nu values for real and artificial data_RIT.png")
-    plt.show()
-
-    for band in [0, 9, 19, 49, 99]:
-        plt.figure()
-        plt.subplots(1, 2, figsize=(10, 5))
-        plt.subplot(1, 2, 1)
-        plt.hist((z.q[:, :, band]-z.q_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
-        plt.title("Histogram of artificial data - final cube")
-        plt.xlabel("Pixel value")
-        plt.ylabel("Number of pixels")
-        plt.legend()
-        plt.grid()
-        plt.subplot(1, 2, 2)
-        plt.hist((z.cube[:, :, band]-z.x_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
-        plt.title("Histogram of real data - m8")
-        plt.xlabel("Pixel value")
-        plt.ylabel("Number of pixels")
-        plt.legend()
-        plt.grid()
-        plt.savefig(f"plots/Histogram of real and artificial data using {method} method_{name[1]}_band_{band+1}.png")
-        plt.show()
-    print("Done with the simulation.")
+#     nu_x = find_nu(z.cube, z.x_mean, z.x_cov, method)
+#     nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
+#     nu_q = find_nu(z.q, z.q_mean, z.q_cov, method)
+#     plt.figure()
+#     plt.semilogy(nu_x, label="real data before PCA")
+#     plt.semilogy(z.nu_y, label="real data after PCA")
+#     plt.semilogy(nu_z, label="artificial data before PCA")
+#     plt.semilogy(nu_q, label="artificial data after PCA")
+#     plt.title(f"Comparing Nu values for real and artificial data")
+#     plt.xlabel("Band number")
+#     plt.ylabel("Nu - log scale")
+#     plt.legend()
+#     plt.grid()
+#     plt.savefig(f"plots/Comparing Nu values for real and artificial data_RIT.png")
+#     plt.show()
+#
+#     for band in [0, 9, 19, 49, 99]:
+#         plt.figure()
+#         plt.subplots(1, 2, figsize=(10, 5))
+#         plt.subplot(1, 2, 1)
+#         plt.hist((z.q[:, :, band]-z.q_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
+#         plt.title("Histogram of artificial data - final cube")
+#         plt.xlabel("Pixel value")
+#         plt.ylabel("Number of pixels")
+#         plt.legend()
+#         plt.grid()
+#         plt.subplot(1, 2, 2)
+#         plt.hist((z.cube[:, :, band]-z.x_mean[:, :, band]).flatten(), bins=100, label=f"band: {band}")
+#         plt.title("Histogram of real data - m8")
+#         plt.xlabel("Pixel value")
+#         plt.ylabel("Number of pixels")
+#         plt.legend()
+#         plt.grid()
+#         plt.savefig(f"plots/Histogram of real and artificial data using {method} method_{name[1]}_band_{band+1}.png")
+#         plt.show()
+#     print("Done with the simulation.")
 #################################################################################################################
     # Simulation : check if the DOF estimation is correct for diffreent values of constant std.
     # sample_size = 20000

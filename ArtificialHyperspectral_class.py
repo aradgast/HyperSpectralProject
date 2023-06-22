@@ -108,10 +108,12 @@ class HyperSpectralCube:
         :return: None
         """
         plt.figure()
-        plt.imshow(self.nu, cmap='gray')
+        plt.semilogy(self.nu)
         plt.colorbar()
         if title is not None:
             plt.title(title)
+        plt.xlabel("Band")
+        plt.ylabel("DOF")
         plt.show()
 
     def plot_all(self, title=None):
@@ -155,8 +157,8 @@ class HyperSpectralCube:
         """
         print(f"This is Hyperspectral cube with {self.bands} bands, {self.rows} rows and {self.cols} columns")
         print(f"The data type is {self.cube.dtype}")
-        print(f"The mean is: \n{self.mean}")
-        print(f"The covariance is: \n{self.cov}")
+        # print(f"The mean is: \n{self.mean}")
+        # print(f"The covariance is: \n{self.cov}")
         if self.nu is not None:
             print(f"The degree of freedom is: \n{self.nu}")
         return ""
