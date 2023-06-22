@@ -15,7 +15,7 @@ def get_pca(data, mean=None, cov=None):
     :param data: the data cube
     :param mean: the mean of the data cube, if None the function will calculate it
     :param cov: the covariance of the data cube, if None the function will calculate it
-    :return: the PCA of the data cube
+    :return: the PCA of the data cube, eigvec, eigval
     """
 
     # get the shape of the cube
@@ -36,7 +36,7 @@ def get_pca(data, mean=None, cov=None):
         for c in range(col):
             cube[r, c, :] = np.matmul(scale_eigvec, data[r, c, :], dtype=PRECISION)
 
-    return cube, upscale_eigvec
+    return cube, eigvec, eigval
 
 
 if __name__ == "__main__":
