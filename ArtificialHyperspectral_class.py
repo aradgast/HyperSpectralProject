@@ -171,9 +171,9 @@ class ArtificialHSC(HyperSpectralCube):
         cube = np.zeros((rows, cols, bands))
         for band in range(bands):
             if nu[band] < 2 or nu[band] > 50:
-                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(self.rows, self.cols))
+                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(rows, cols))
             else:
-                cube[:, :, band] = t_dist.rvs(self.nu[band], loc=0, scale=1, size=(self.rows, self.cols))
+                cube[:, :, band] = t_dist.rvs(nu[band], loc=0, scale=1, size=(rows, cols))
                 # cube[:, :, band] *= np.sqrt(cov[band, band])
                 # cube[:, :, band] += mean[:, :, band]
         super().__init__(header=None, cube=cube)
