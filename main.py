@@ -34,7 +34,7 @@ if __name__ == "__main__":
     mf_res_y = matched_filter(0.065, pca_data.cube, pca_data.mean, pca_data.cov,
                               pca_data.cube[4, 2].reshape(1, 1, -1))
     mf_res_q = matched_filter(0.065, artifical_data.cube, artifical_data.mean, artifical_data.cov,
-                              pca_data.cube[4, 2].reshape(1, 1, -1))
+                              original_data.cube[4, 2].reshape(1, 1, -1))
     stats_x = calc_stats(mf_res_x[0], mf_res_y[1])
     stats_y = calc_stats(mf_res_y[0], mf_res_x[1])
     stats_q = calc_stats(mf_res_q[0], mf_res_x[1])
