@@ -26,13 +26,13 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
     :param method: the method for finding nu
     :return: nu vector
     """
-    cube -= mean_matrix
+    cube_no_mean = np.subtract(cube, mean_matrix)
     # 1. estimate nu based on james tyler formula
     if method == 'Tyler':
         bands = cube.shape[2]
         nu = np.zeros((bands, 1))
         for i in range(bands):
-            r = np.abs(cube[:, :, i] / np.sqrt(cov[i, i]))
+            r = np.abs(cube_no_mean[:, :, i] / np.sqrt(cov[i, i]))
             k = np.mean(np.power(r, 3)) / np.mean(r)
             if k <= 2:
                 nu[i] = 0
@@ -58,7 +58,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
 
         for band in range(cube.shape[2]):
             for sim in range(simulation):
-                test = ks_2samp(cube[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim],
+                test = ks_2samp(cube_no_mean[:, :, band].reshape(cube.shape[0] * cube.shape[1]), comp_mat[:, sim],
                                 alternative='two-sided')  # KS test for comparing 2 unknown distribution samples
                 statiscis_result[sim] = test[0]
             nu[band] = nu_vec[np.argmin(statiscis_result)]
@@ -114,7 +114,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
     elif method == 'MLE':
         nu = np.zeros((cube.shape[2], 1))
         for band in range(cube.shape[2]):
-            stats = t_dist.fit((cube[:, :, band]).flatten())
+            stats = t_dist.fit((cube_no_mean[:, :, band]).flatten())
             nu[band] = stats[0]
 
     elif method == 'NN':

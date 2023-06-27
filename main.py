@@ -10,6 +10,7 @@ from find_nu import find_nu
 from local_mean_covariance import get_m8, get_cov8
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
+import datetime
 
 warnings.filterwarnings('ignore')
 
@@ -22,27 +23,28 @@ if __name__ == "__main__":
     pca_data = original_data.pca_transform()
     pca_data.calc_mean()
     pca_data.calc_cov()
-    pca_data.calc_nu("MLE")
-    artifcial_data = ArtificialHSC(pca_data.mean, pca_data.cov, pca_data.nu,
-                                   original_data.eigenvectors, original_data.eigenvalues,
-                                   original_data.rows, original_data.cols, original_data.bands)
-    artifcial_data.calc_mean()
-    artifcial_data.calc_cov()
-    artifcial_data.calc_nu("MLE")
-    print("done simulation")
-    # plot the DOF
-    plt.figure()
-    if original_data.nu is not None:
-        plt.plot(original_data.nu, label="original")
-    if pca_data.nu is not None:
-        plt.plot(pca_data.nu, label="pca")
-    if artifcial_data.nu is not None:
-        plt.plot(artifcial_data.nu, label="artificial")
-    plt.legend()
-    plt.title("DOF")
-    plt.xlabel("band")
-    plt.ylabel("DOF")
-    plt.show()
+    pca_data.calc_nu("Tyler")
+
+    # artificial data
+    artifical_data = ArtificialHSC(pca_data, original_data.eigenvectors, original_data.eigenvalues)
+
+    # MF results
+    mf_res_x = matched_filter(0.065, original_data.cube, original_data.mean, original_data.cov,
+                              original_data.cube[4, 2].reshape(1, 1, -1))
+    mf_res_y = matched_filter(0.065, pca_data.cube, pca_data.mean, pca_data.cov,
+                              pca_data.cube[4, 2].reshape(1, 1, -1))
+    mf_res_q = matched_filter(0.065, artifical_data.cube, artifical_data.mean, artifical_data.cov,
+                              pca_data.cube[4, 2].reshape(1, 1, -1))
+    stats_x = calc_stats(mf_res_x[0], mf_res_y[1])
+    stats_y = calc_stats(mf_res_y[0], mf_res_x[1])
+    stats_q = calc_stats(mf_res_q[0], mf_res_x[1])
+    plot_stats([stats_x[0], stats_y[0], stats_q[0]],
+               [stats_x[1], stats_y[1], stats_q[1]],
+               [stats_x[2], stats_y[2], stats_q[2]],
+               [stats_x[3], stats_y[3], stats_q[3]],
+               [stats_x[4], stats_y[4], stats_q[4]],
+               algo_name='MF', name_of_the_plot='test', save_fig=False)
+    print('MF done')
 
 
 

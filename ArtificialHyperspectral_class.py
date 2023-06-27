@@ -167,33 +167,35 @@ class HyperSpectralCube:
 class ArtificialHSC(HyperSpectralCube):
     """ this class initialize an artificial hyperspectral cube according to the original data"""
 
-    def __init__(self, mean, cov, nu, eigenvectors, eigenvalues, rows, cols, bands):
-        cube = np.zeros((rows, cols, bands))
-        for band in range(bands):
-            if nu[band] < 2 or nu[band] > 50:
-                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(rows, cols))
+    def __init__(self, original_data, eigenvectors, eigenvalues):
+        cube = np.zeros((original_data.rows, original_data.cols, original_data.bands))
+        for band in range(original_data.bands):
+            if original_data.nu[band] < 2 or original_data.nu[band] > 50:
+                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(original_data.rows, original_data.cols))
             else:
-                cube[:, :, band] = t_dist.rvs(nu[band], loc=0, scale=1, size=(rows, cols))
+                cube[:, :, band] = t_dist.rvs(original_data.nu[band], loc=0, scale=1, size=(original_data.rows, original_data.cols))
                 # cube[:, :, band] *= np.sqrt(cov[band, band])
                 # cube[:, :, band] += mean[:, :, band]
         super().__init__(header=None, cube=cube)
         self.calc_mean("global")
         self.calc_cov("global")
+        for band in range(self.bands):
+            self.cube[:, :, band] *= (np.sqrt(original_data.cov[band, band]) / np.sqrt(self.cov[band, band]))
+        self.cube += original_data.mean
+        self.calc_mean("global")
+        self.calc_cov("global")
         self.cube, self.eigenvectors, self.eigenvalues = get_pca(self.cube, self.mean, self.cov)
         self.calc_mean("global")
         self.calc_cov("global")
-
-        for band in range(self.bands):
-            self.cube[:, :, band] *= np.sqrt(cov[band, band])
-        self.cube += mean
-
+        #
+        #
         for r in range(self.rows):
             for c in range(self.cols):
                 self.cube[r, c, :] = np.matmul(eigenvectors, self.cube[r, c, :]*np.sqrt(eigenvalues))
-
+        #
         self.calc_mean("global")
         self.calc_cov("global")
-        self.calc_nu("MLE")
+        # # self.calc_nu("")
 
 
 
@@ -317,6 +319,5 @@ class ArtificialHyperspectralCube:
 
 
 if __name__ == "__main__":
-    a = HyperSpectralCube()
 
     pass

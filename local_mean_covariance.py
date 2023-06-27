@@ -70,7 +70,7 @@ def get_cov8(cube, m8_cube = None, method='local'):
     if m8_cube is None:
         m8_cube = get_m8(cube, method)
     rows, cols, bands = cube.shape
-    x = cube - m8_cube  # subtract mean
+    x = np.subtract(cube, m8_cube, dtype=PRECISION)
     x = x.reshape(rows * cols, bands)  # flatten to 2D array
     cov = np.cov(x, rowvar=False, bias=True)  # compute covariance
     return cov
