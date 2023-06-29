@@ -85,7 +85,6 @@ class HyperSpectralCube:
         """
         plt.figure()
         plt.imshow(self.mean, cmap='gray')
-        plt.colorbar()
         if title is not None:
             plt.title(title)
         plt.show()
@@ -109,7 +108,6 @@ class HyperSpectralCube:
         """
         plt.figure()
         plt.semilogy(self.nu)
-        plt.colorbar()
         if title is not None:
             plt.title(title)
         plt.xlabel("Band")
@@ -191,7 +189,7 @@ class ArtificialHSC(HyperSpectralCube):
         #
         for r in range(self.rows):
             for c in range(self.cols):
-                self.cube[r, c, :] = np.matmul(eigenvectors, self.cube[r, c, :]*np.sqrt(eigenvalues))
+                self.cube[r, c, :] = np.matmul(eigenvectors, self.cube[r, c, :] * np.sqrt(eigenvalues))
         #
         self.calc_mean("global")
         self.calc_cov("global")

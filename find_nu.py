@@ -142,10 +142,10 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
 
 
 if __name__ == "__main__":
-    weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject\weights\best_model.pt"
-    net = DOFNet()
-    net.load_state_dict(torch.load(weights_path, map_location=device))
-    print(net)
+    # weights_path = r"C:\Users\gast\PycharmRepos\HyperSpectralProject\weights\best_model.pt"
+    # net = DOFNet()
+    # net.load_state_dict(torch.load(weights_path, map_location=device))
+    # print(net)
     # net.eval()
     # net.to(device)
     # import spectral as spy
@@ -159,3 +159,4 @@ if __name__ == "__main__":
     # data = transform(data).to(device)
     # output = net(data)
     # print(output)
+    pass

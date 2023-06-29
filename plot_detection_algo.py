@@ -34,7 +34,8 @@ def calc_stats(target_cube, no_target_cube, bins=1000):
 
 
 def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
-               legends=None, algo_name='MF', name_of_the_plot=None, save_fig=True):
+               legends=None, algo_name='MF', name_of_the_dataset=None,
+               name_of_estimation_method=None, save_fig=True):
     """this function plots the results of the detection algorithm
     axis - the axis of the cumulative probability
     hist_wt - the histogram of the WT
@@ -53,15 +54,18 @@ def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
     if legends is None:
         print('legends is None, using default legends')
         legends = ['Cube ' + str(i) for i in range(number_of_cubes)]
-    if name_of_the_plot is None:
-        print('name_of_the_plot is None, using default name')
-        name_of_the_plot = f"plot_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    if name_of_estimation_method is None:
+        print('name_of_estimation_method is None, using default name')
+        name_of_estimation_method = "Generic"
+    if name_of_the_dataset is None:
+        print('name_of_the_dataset is None, using default name')
+        name_of_the_dataset = "Generic"
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
-    title1 = f'{algo_name} - histogram results'
-    title2 = f'{algo_name} - log10 histogram results'
-    title3 = f'{algo_name} - inverse cumulative probability'
-    title4 = f'{algo_name} - ROC curve with limited pfa'
+    title1 = f'histogram results'
+    title2 = f'log10 histogram results'
+    title3 = f'inverse cumulative probability'
+    title4 = f'ROC curve with limited pfa'
     colors = ['g', 'b', 'r', 'k', 'c', 'm', 'y', 'w']
 
     for i in range(number_of_cubes):
@@ -122,9 +126,10 @@ def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
     ax[0, 1].set_title(title2)
     ax[1, 0].set_title(title3)
     ax[1, 1].set_title(title4)
-    fig.tight_layout()
     if save_fig:
-        plt.savefig(f'{name_of_the_plot}')
+        plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}.png")
+    fig.suptitle(f'{algo_name} performance on {name_of_the_dataset} dataset with {name_of_estimation_method} as DOF estimation', fontsize=10)
+    fig.tight_layout()
     plt.show()
 
 

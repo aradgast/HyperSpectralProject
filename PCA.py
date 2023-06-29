@@ -40,22 +40,4 @@ def get_pca(data, mean=None, cov=None):
 
 
 if __name__ == "__main__":
-    import spectral as spy
-    import matplotlib.pyplot as plt
-
-    # load the data
-    data = spy.open_image('D1_F12_H2_Cropped_des_Aligned.hdr')
-    # convert the data to a numpy array
-    data = np.array(data.open_memmap())
-    # perform PCA
-    cube, cov, cov2 = get_pca(data)
-    # plot the data
-    plt.imshow(cube[:, :, 0])
-    plt.show()
-    plt.imshow(cov)
-    plt.show()
-    plt.imshow(cov2)
-    plt.colorbar()
-    plt.show()
-
     pass

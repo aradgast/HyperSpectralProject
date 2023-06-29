@@ -16,37 +16,60 @@ warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
     # NEW FORMATTING
-    original_data = HyperSpectralCube('data\self_test_rad.hdr')
-    original_data.calc_mean()
-    original_data.calc_cov()
+    datasets = {"Via-Reggio": 'data/D1_F12_H1_Cropped.hdr',
+                "RIT": 'data/self_test_rad.hdr'}
+    methods = ["Tyler", "Constant2", "MLE", "KS"]
+    print('**************************************************************************************')
+    print("Starting Simulation at , ", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    print('Dataset: ', datasets.keys())
+    print('Methods: ', methods)
+    print('**************************************************************************************')
+    for dataset_name, dataset_header in datasets.items():
+        original_data = HyperSpectralCube(dataset_header)
+        original_data.calc_mean()
+        original_data.calc_cov()
 
-    pca_data = original_data.pca_transform()
-    pca_data.calc_mean()
-    pca_data.calc_cov()
-    pca_data.calc_nu("Tyler")
+        pca_data = original_data.pca_transform()
+        pca_data.calc_mean()
+        pca_data.calc_cov()
 
-    # artificial data
-    artifical_data = ArtificialHSC(pca_data, original_data.eigenvectors, original_data.eigenvalues)
+        mf_res_x = matched_filter(0.065, original_data.cube, original_data.mean, original_data.cov,
+                                  original_data.cube[4, 2].reshape(1, 1, -1))
+        mf_res_y = matched_filter(0.065, pca_data.cube, pca_data.mean, pca_data.cov,
+                                  pca_data.cube[4, 2].reshape(1, 1, -1))
 
-    # MF results
-    mf_res_x = matched_filter(0.065, original_data.cube, original_data.mean, original_data.cov,
-                              original_data.cube[4, 2].reshape(1, 1, -1))
-    mf_res_y = matched_filter(0.065, pca_data.cube, pca_data.mean, pca_data.cov,
-                              pca_data.cube[4, 2].reshape(1, 1, -1))
-    mf_res_q = matched_filter(0.065, artifical_data.cube, artifical_data.mean, artifical_data.cov,
-                              original_data.cube[4, 2].reshape(1, 1, -1))
-    stats_x = calc_stats(mf_res_x[0], mf_res_y[1])
-    stats_y = calc_stats(mf_res_y[0], mf_res_x[1])
-    stats_q = calc_stats(mf_res_q[0], mf_res_x[1])
-    plot_stats([stats_x[0], stats_y[0], stats_q[0]],
-               [stats_x[1], stats_y[1], stats_q[1]],
-               [stats_x[2], stats_y[2], stats_q[2]],
-               [stats_x[3], stats_y[3], stats_q[3]],
-               [stats_x[4], stats_y[4], stats_q[4]],
-               algo_name='MF', name_of_the_plot='test', save_fig=False)
-    print('MF done')
+        stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+        stats_y = calc_stats(mf_res_y[0], mf_res_y[1])
 
+        for method in methods:
+            print('**************************************************************************************')
+            print('Dataset: ', dataset_name)
+            print('Method: ', method)
+            print('**************************************************************************************')
+            pca_data.calc_nu(method)
+            pca_data.plot_nu(f'{dataset_name} DOF Estimation - {method}')
+            # artificial data
+            artifical_data = ArtificialHSC(pca_data, original_data.eigenvectors, original_data.eigenvalues)
 
+            # MF results
+
+            mf_res_q = matched_filter(0.065, artifical_data.cube, artifical_data.mean, artifical_data.cov,
+                                      original_data.cube[4, 2].reshape(1, 1, -1))
+
+            stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+            plot_stats([stats_x[0], stats_y[0], stats_q[0]],
+                       [stats_x[1], stats_y[1], stats_q[1]],
+                       [stats_x[2], stats_y[2], stats_q[2]],
+                       [stats_x[3], stats_y[3], stats_q[3]],
+                       [stats_x[4], stats_y[4], stats_q[4]],
+                       algo_name='MF', save_fig=True, legends=["Original data", "PCA data", "Artificial data"],
+                       name_of_the_dataset=dataset_name, name_of_estimation_method=method)
+            print("**************************************************************************************")
+            print("DONE : for data ", dataset_name, " and method ", method)
+        print("**************************************************************************************")
+        print("DONE : for data ", dataset_name)
+        print("**************************************************************************************")
+    print("Simulation Done.")
 
     # header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
     # statistical_method = 'global'                               # 'global', 'local'
@@ -80,12 +103,12 @@ if __name__ == "__main__":
     #
     #     stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
 
-        # plot_stats(3, [stats_x[0], stats_q[0], stats_g[0]],
-        #            [stats_x[1], stats_q[1], stats_g[1]],
-        #            [stats_x[2], stats_q[2], stats_g[2]],
-        #            [stats_x[3], stats_q[3], stats_g[3]],
-        #            [stats_x[4], stats_q[4], stats_g[4]],
-        #            ['Original data', 'Artificial data', 'Gaussian method'], 'MF', name, method)
+    # plot_stats(3, [stats_x[0], stats_q[0], stats_g[0]],
+    #            [stats_x[1], stats_q[1], stats_g[1]],
+    #            [stats_x[2], stats_q[2], stats_g[2]],
+    #            [stats_x[3], stats_q[3], stats_g[3]],
+    #            [stats_x[4], stats_q[4], stats_g[4]],
+    #            ['Original data', 'Artificial data', 'Gaussian method'], 'MF', name, method)
     #
     ##################################################################################################################
     # simulation for checking the DOF estimation methods.
@@ -174,77 +197,77 @@ if __name__ == "__main__":
     #         mf_res_q[method] = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
     #         stats_q[method] = calc_stats(mf_res_q[method][0], mf_res_q[method][1])
     #     plot the results
-        # plot_stats(2+len(methods), [stats_x[0], stats_g[0], stats_q['NN'][0], stats_q['MLE'][0], stats_q['Constant2'][0], stats_q['KS'][0], stats_q['Tyler'][0]],
-        # [stats_x[1], stats_g[1], stats_q['NN'][1], stats_q['MLE'][1], stats_q['Constant2'][1], stats_q['KS'][1], stats_q['Tyler'][1]],
-        # [stats_x[2], stats_g[2], stats_q['NN'][2], stats_q['MLE'][2], stats_q['Constant2'][2], stats_q['KS'][2], stats_q['Tyler'][2]],
-        # [stats_x[3], stats_g[3], stats_q['NN'][3], stats_q['MLE'][3], stats_q['Constant2'][3], stats_q['KS'][3], stats_q['Tyler'][3]],
-        # [stats_x[4], stats_g[4], stats_q['NN'][4], stats_q['MLE'][4], stats_q['Constant2'][4], stats_q['KS'][4], stats_q['Tyler'][4]],
-       # ["Original data", "Gaussian method", "NN", "MLE", "Constant2", "KS", "Tyler"], "MF", f"plots/Results for final report_{header}.png")
+    # plot_stats(2+len(methods), [stats_x[0], stats_g[0], stats_q['NN'][0], stats_q['MLE'][0], stats_q['Constant2'][0], stats_q['KS'][0], stats_q['Tyler'][0]],
+    # [stats_x[1], stats_g[1], stats_q['NN'][1], stats_q['MLE'][1], stats_q['Constant2'][1], stats_q['KS'][1], stats_q['Tyler'][1]],
+    # [stats_x[2], stats_g[2], stats_q['NN'][2], stats_q['MLE'][2], stats_q['Constant2'][2], stats_q['KS'][2], stats_q['Tyler'][2]],
+    # [stats_x[3], stats_g[3], stats_q['NN'][3], stats_q['MLE'][3], stats_q['Constant2'][3], stats_q['KS'][3], stats_q['Tyler'][3]],
+    # [stats_x[4], stats_g[4], stats_q['NN'][4], stats_q['MLE'][4], stats_q['Constant2'][4], stats_q['KS'][4], stats_q['Tyler'][4]],
+    # ["Original data", "Gaussian method", "NN", "MLE", "Constant2", "KS", "Tyler"], "MF", f"plots/Results for final report_{header}.png")
 
 ##################################################################################################################
-    # Simulation : create artificial cube using MLE method and plot the DOF vector results.
-    # headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    # statistical_method = 'local'                               # 'global', 'local'
-    # method = 'MLE'
-    # header = "data/" + headers[1]
-    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    # z.create_z_cube(method)
-    # nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
-    # nu_q = find_nu(z.t, z.t_mean, z.t_cov, method)
-    # plt.figure()
-    # plt.plot(z.nu_y, label="estimated on Y")
-    # plt.plot(nu_z, label="estimated on Z")
-    # plt.title(f"DOF estimation using {method} method")
-    # plt.xlabel("Band number")
-    # plt.ylabel("DOF")
-    # plt.legend()
-    # plt.grid()
-    # plt.savefig(f"plots/DOF estimation values linear scale using {method} method_RIT.png")
-    # plt.show()
+# Simulation : create artificial cube using MLE method and plot the DOF vector results.
+# headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+# statistical_method = 'local'                               # 'global', 'local'
+# method = 'MLE'
+# header = "data/" + headers[1]
+# z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+# z.create_z_cube(method)
+# nu_z = find_nu(z.artificial_data, z.m8, z.cov, method)
+# nu_q = find_nu(z.t, z.t_mean, z.t_cov, method)
+# plt.figure()
+# plt.plot(z.nu_y, label="estimated on Y")
+# plt.plot(nu_z, label="estimated on Z")
+# plt.title(f"DOF estimation using {method} method")
+# plt.xlabel("Band number")
+# plt.ylabel("DOF")
+# plt.legend()
+# plt.grid()
+# plt.savefig(f"plots/DOF estimation values linear scale using {method} method_RIT.png")
+# plt.show()
 
-    # plt.figure()
-    # plt.semilogy(z.nu_y, label="estimated on Y")
-    # plt.semilogy(nu_z, label="estimated on Z")
-    # plt.title(f"DOF estimation using {method} method")
-    # plt.xlabel("Band number")
-    # plt.ylabel("DOF")
-    # plt.legend()
-    # plt.grid()
-    # plt.savefig(f"plots/DOF estimation values log scale using {method} method_RIT.png")
-    # plt.show()
-    # print("Done with the simulation.")
+# plt.figure()
+# plt.semilogy(z.nu_y, label="estimated on Y")
+# plt.semilogy(nu_z, label="estimated on Z")
+# plt.title(f"DOF estimation using {method} method")
+# plt.xlabel("Band number")
+# plt.ylabel("DOF")
+# plt.legend()
+# plt.grid()
+# plt.savefig(f"plots/DOF estimation values log scale using {method} method_RIT.png")
+# plt.show()
+# print("Done with the simulation.")
 ##################################################################################################################
-    # Simulation : create artificial cube using diffreent values of constant DOF and plot the AUC results.
-    # headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
-    # statistical_method = 'local'                               # 'global', 'local'
-    # methods = ['Constant2', 'Constant2.5', 'Constant3', 'Constant3.5', 'Constant4', 'Constant4.5', 'Constant5', 'Constant5.5', 'Constant6', 'Constant6.5', 'Constant7', 'Constant7.5', 'Constant8']
-    # header = "data/" + headers[1]
-    # z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
-    # mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
-    # stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-    # fpr = stats_x[2]
-    # tpr = stats_x[3]
-    # idx = len(fpr[fpr <= 0.01])
-    # roc_auc_x = auc(fpr[:idx], tpr[:idx])
-    # relativec_err = []
-    # for method in methods:
-    #     z.create_z_cube(method)
-    #     mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
-    #     stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-    #     fpr = stats_q[2]
-    #     tpr = stats_q[3]
-    #     idx = len(fpr[fpr <= 0.01])
-    #     roc_auc_q = auc(fpr[:idx], tpr[:idx])
-    #     relativec_err.append((np.abs(roc_auc_q - roc_auc_x) / roc_auc_x) * 100)
-    # plt.figure()
-    # plt.plot([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,6, 6.5, 7, 7.5, 8], relativec_err)
-    # plt.title(f"Relative error in AUC for different constant DOF values")
-    # plt.xlabel("Constant DOF value")
-    # plt.ylabel("Relative error in AUC (%)")
-    # plt.grid()
-    # plt.savefig(f"plots/Relative error in AUC for different constant DOF values_RIT.png")
-    # plt.show()
-    # print("Done with the simulation.")
+# Simulation : create artificial cube using diffreent values of constant DOF and plot the AUC results.
+# headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
+# statistical_method = 'local'                               # 'global', 'local'
+# methods = ['Constant2', 'Constant2.5', 'Constant3', 'Constant3.5', 'Constant4', 'Constant4.5', 'Constant5', 'Constant5.5', 'Constant6', 'Constant6.5', 'Constant7', 'Constant7.5', 'Constant8']
+# header = "data/" + headers[1]
+# z = ArtificialHyperspectralCube(header, statistical_method=statistical_method)
+# mf_res_x = matched_filter(0.065, z.cube, z.x_mean, z.x_cov, z.cube[4, 2].reshape(1, 1, -1))
+# stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+# fpr = stats_x[2]
+# tpr = stats_x[3]
+# idx = len(fpr[fpr <= 0.01])
+# roc_auc_x = auc(fpr[:idx], tpr[:idx])
+# relativec_err = []
+# for method in methods:
+#     z.create_z_cube(method)
+#     mf_res_q = matched_filter(0.065, z.q, z.q_mean, z.q_cov, z.y[4, 2].reshape(1, 1, -1))
+#     stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
+#     fpr = stats_q[2]
+#     tpr = stats_q[3]
+#     idx = len(fpr[fpr <= 0.01])
+#     roc_auc_q = auc(fpr[:idx], tpr[:idx])
+#     relativec_err.append((np.abs(roc_auc_q - roc_auc_x) / roc_auc_x) * 100)
+# plt.figure()
+# plt.plot([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,6, 6.5, 7, 7.5, 8], relativec_err)
+# plt.title(f"Relative error in AUC for different constant DOF values")
+# plt.xlabel("Constant DOF value")
+# plt.ylabel("Relative error in AUC (%)")
+# plt.grid()
+# plt.savefig(f"plots/Relative error in AUC for different constant DOF values_RIT.png")
+# plt.show()
+# print("Done with the simulation.")
 # ##################################################################################################################
 #     # Simulation : show histogram of real and artificial data using constant DOF method.
 #     headers = ["D1_F12_H1_Cropped.hdr", 'self_test_rad.hdr']                      # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
@@ -291,15 +314,15 @@ if __name__ == "__main__":
 #         plt.show()
 #     print("Done with the simulation.")
 #################################################################################################################
-    # Simulation : check if the DOF estimation is correct for diffreent values of constant std.
-    # sample_size = 20000
-    # smaple_1 = t_dist.rvs(2, loc=0, scale=1, size=sample_size)
-    # smaple_10 = t_dist.rvs(2, loc=0, scale=10, size=sample_size)
-    # smaple_100 = t_dist.rvs(2, loc=0, scale=100, size=sample_size)
-    # stats_1 = t_dist.fit(smaple_1)
-    # stats_10 = t_dist.fit(smaple_10)
-    # stats_100 = t_dist.fit(smaple_100)
-    # print("for std = 1, DOF = ", stats_1[0])
-    # print("for std = 10, DOF = ", stats_10[0])
-    # print("for std = 100, DOF = ", stats_100[0])
-    # print("Done with the simulation.")
+# Simulation : check if the DOF estimation is correct for diffreent values of constant std.
+# sample_size = 20000
+# smaple_1 = t_dist.rvs(2, loc=0, scale=1, size=sample_size)
+# smaple_10 = t_dist.rvs(2, loc=0, scale=10, size=sample_size)
+# smaple_100 = t_dist.rvs(2, loc=0, scale=100, size=sample_size)
+# stats_1 = t_dist.fit(smaple_1)
+# stats_10 = t_dist.fit(smaple_10)
+# stats_100 = t_dist.fit(smaple_100)
+# print("for std = 1, DOF = ", stats_1[0])
+# print("for std = 10, DOF = ", stats_10[0])
+# print("for std = 100, DOF = ", stats_100[0])
+# print("Done with the simulation.")
