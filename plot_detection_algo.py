@@ -126,10 +126,11 @@ def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
     ax[0, 1].set_title(title2)
     ax[1, 0].set_title(title3)
     ax[1, 1].set_title(title4)
-    if save_fig:
-        plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}.png")
+
     fig.suptitle(f'{algo_name} performance on {name_of_the_dataset} dataset with {name_of_estimation_method} as DOF estimation', fontsize=10)
     fig.tight_layout()
+    if save_fig:
+        plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
     plt.show()
 
 

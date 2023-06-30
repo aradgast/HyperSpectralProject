@@ -14,12 +14,17 @@ import matplotlib.pyplot as plt
 from PCA import get_pca
 from find_nu import find_nu
 from scipy.stats import t as t_dist
+import datetime
 
 
 class HyperSpectralCube:
     """ This class is an object the hold hyperspectral data."""
 
     def __init__(self, header=None, cube=None):
+        """ This function initializes the object.
+        :param header: the header of the data
+        :param cube: the data cube
+        """
 
         if header is not None:
             self.data = open_image(header)
@@ -65,7 +70,7 @@ class HyperSpectralCube:
         transformed_cube, self.eigenvectors, self.eigenvalues = get_pca(self.cube, self.mean, self.cov)
         return HyperSpectralCube(cube=transformed_cube)
 
-    def plot(self, band, title=None):
+    def plot_band(self, band, title=None):
         """ This function plots a specific band of the data.
         :param band: the band to plot
         :param title: the title of the plot
@@ -78,13 +83,25 @@ class HyperSpectralCube:
             plt.title(title)
         plt.show()
 
+    def plot_all_bands(self, index_list, title=None):
+        """ This function plots all the bands of the data.
+        :param title: the title of the plot
+        :return: None
+        """
+        for band in index_list:
+            if title is not None:
+                title = title + ' band ' + str(band)
+            else:
+                title = 'band ' + str(band)
+            self.plot_band(band, title=title)
+
     def plot_mean(self, title=None):
         """ This function plots the mean of the data.
         :param title: the title of the plot
         :return: None
         """
         plt.figure()
-        plt.imshow(self.mean, cmap='gray')
+        plt.imshow(self.mean.reshape(self.rows * self.cols, self.bands), cmap='heat')
         if title is not None:
             plt.title(title)
         plt.show()
@@ -95,7 +112,7 @@ class HyperSpectralCube:
         :return: None
         """
         plt.figure()
-        plt.imshow(self.cov, cmap='gray')
+        plt.imshow(self.cov, cmap='heat')
         plt.colorbar()
         if title is not None:
             plt.title(title)
@@ -112,41 +129,8 @@ class HyperSpectralCube:
             plt.title(title)
         plt.xlabel("Band")
         plt.ylabel("DOF")
-        plt.show()
-
-    def plot_all(self, title=None):
-        """ This function plots the mean, covariance and degree of freedom of the data.
-        :param title: the title of the plot
-        :return: None
-        """
-        plt.figure()
-        plt.subplot(1, 3, 1)
-        plt.imshow(self.mean, cmap='gray')
-        plt.colorbar()
-        plt.title('Mean')
-        plt.subplot(1, 3, 2)
-        plt.imshow(self.cov, cmap='gray')
-        plt.colorbar()
-        plt.title('Covariance')
-        plt.subplot(1, 3, 3)
-        plt.imshow(self.nu, cmap='gray')
-        plt.colorbar()
-        plt.title('Degree of freedom')
-        plt.suptitle(title)
-        plt.show()
-
-    def plot_all_bands(self, title=None):
-        """ This function plots all the bands of the data.
-        :param title: the title of the plot
-        :return: None
-        """
-        plt.figure()
-        for i in range(self.bands):
-            plt.subplot(1, self.bands, i + 1)
-            plt.imshow(self.cube[:, :, i], cmap='gray')
-            plt.colorbar()
-            plt.title('Band {}'.format(i + 1))
-        plt.suptitle(title)
+        plt.grid()
+        plt.savefig(f"plots/{title}_{datetime.datetime.now().strftime('%d_%m_%Y__%H_%M_%S')}.png")
         plt.show()
 
     def __str__(self):
@@ -155,8 +139,6 @@ class HyperSpectralCube:
         """
         print(f"This is Hyperspectral cube with {self.bands} bands, {self.rows} rows and {self.cols} columns")
         print(f"The data type is {self.cube.dtype}")
-        # print(f"The mean is: \n{self.mean}")
-        # print(f"The covariance is: \n{self.cov}")
         if self.nu is not None:
             print(f"The degree of freedom is: \n{self.nu}")
         return ""
@@ -165,15 +147,24 @@ class HyperSpectralCube:
 class ArtificialHSC(HyperSpectralCube):
     """ this class initialize an artificial hyperspectral cube according to the original data"""
 
-    def __init__(self, original_data, eigenvectors, eigenvalues):
-        cube = np.zeros((original_data.rows, original_data.cols, original_data.bands))
-        for band in range(original_data.bands):
-            if original_data.nu[band] < 2 or original_data.nu[band] > 50:
-                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(original_data.rows, original_data.cols))
-            else:
-                cube[:, :, band] = t_dist.rvs(original_data.nu[band], loc=0, scale=1, size=(original_data.rows, original_data.cols))
-                # cube[:, :, band] *= np.sqrt(cov[band, band])
-                # cube[:, :, band] += mean[:, :, band]
+    def __init__(self, original_data, eigenvectors, eigenvalues, from_gaussian=False):
+        """ this function initialize the artificial hyperspectral cube
+        :param original_data: the original data
+        :param eigenvectors: the eigenvectors of the original data
+        :param eigenvalues: the eigenvalues of the original data
+        """
+        if not from_gaussian:
+            cube = np.zeros((original_data.rows, original_data.cols, original_data.bands))
+            for band in range(original_data.bands):
+                if original_data.nu[band] <= 0 or original_data.nu[band] > 50:
+                    cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(original_data.rows, original_data.cols))
+                else:
+                    cube[:, :, band] = t_dist.rvs(original_data.nu[band], loc=0, scale=1,
+                                                  size=(original_data.rows, original_data.cols))
+        else:
+            cube = np.random.multivariate_normal(mean=np.zeros(original_data.bands),
+                                                 cov=np.eye(original_data.bands),
+                                                 size=(original_data.rows, original_data.cols))
         super().__init__(header=None, cube=cube)
         self.calc_mean("global")
         self.calc_cov("global")
@@ -182,19 +173,16 @@ class ArtificialHSC(HyperSpectralCube):
         self.cube += original_data.mean
         self.calc_mean("global")
         self.calc_cov("global")
+        # PCA
         self.cube, self.eigenvectors, self.eigenvalues = get_pca(self.cube, self.mean, self.cov)
         self.calc_mean("global")
         self.calc_cov("global")
-        #
-        #
+        # Projection
         for r in range(self.rows):
             for c in range(self.cols):
                 self.cube[r, c, :] = np.matmul(eigenvectors, self.cube[r, c, :] * np.sqrt(eigenvalues))
-        #
         self.calc_mean("global")
         self.calc_cov("global")
-        # # self.calc_nu("")
-
 
 
 class ArtificialHyperspectralCube:
@@ -317,5 +305,4 @@ class ArtificialHyperspectralCube:
 
 
 if __name__ == "__main__":
-
     pass

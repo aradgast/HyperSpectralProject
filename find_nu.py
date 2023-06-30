@@ -28,33 +28,35 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
     """
     cube_no_mean = np.subtract(cube, mean_matrix)
     # 1. estimate nu based on james tyler formula
-    if method == 'Tyler':
+    if method == 'Thiler':
         bands = cube.shape[2]
         nu = np.zeros((bands, 1))
         for i in range(bands):
             r = np.abs(cube_no_mean[:, :, i] / np.sqrt(cov[i, i]))
             k = np.mean(np.power(r, 3)) / np.mean(r)
             if k <= 2:
-                nu[i] = 0
+                nu[i] = 10**6
             else:
                 nu[i] = 2 + k / (k - 2)
 
     # 2. create a cube of t-distribution and find the nu for each band
     elif method == 'KS':
         nu_init = 2  # starts from nu value = 2
-        simulation = 200  # number of nu values testing
+        nu_max = 50
+        simulation = 100  # number of nu values testing
         comp_mat = np.zeros(
             shape=(cube.shape[0] * cube.shape[1], simulation))  # save the matrix represent the distribution
         nu_vec = np.zeros(shape=(simulation, 1))
         nu = np.zeros((cube.shape[2], 1))
         statiscis_result = np.zeros((simulation, 1))
 
-        for i in range(simulation):
+        for i in range(simulation-1):
             comp_mat[:, i] = np.random.standard_t(nu_init, size=cube.shape[0] * cube.shape[1])
             comp_mat[:, i] *= 1 / np.std(comp_mat[:, i])
             comp_mat[:, i] -= np.mean(comp_mat[:, i])
             nu_vec[i] = nu_init
-            nu_init += 20 / simulation
+            nu_init += nu_max / simulation
+        comp_mat[:, simulation-1] = np.random.normal(loc=0, scale=1, size=cube.shape[0] * cube.shape[1])
 
         for band in range(cube.shape[2]):
             for sim in range(simulation):

@@ -18,10 +18,10 @@ if __name__ == "__main__":
     # NEW FORMATTING
     datasets = {"Via-Reggio": 'data/D1_F12_H1_Cropped.hdr',
                 "RIT": 'data/self_test_rad.hdr'}
-    methods = ["Tyler", "Constant2", "MLE", "KS"]
+    methods = ["Thiler", "Constant2", "MLE", "KS"]
     print('**************************************************************************************')
-    print("Starting Simulation at , ", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
-    print('Dataset: ', datasets.keys())
+    print("Starting Simulation at ", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    print('Dataset: ', list(datasets.keys()))
     print('Methods: ', methods)
     print('**************************************************************************************')
     for dataset_name, dataset_header in datasets.items():
@@ -33,16 +33,24 @@ if __name__ == "__main__":
         pca_data.calc_mean()
         pca_data.calc_cov()
 
+
+        gaussian_data = ArtificialHSC(pca_data,
+                                      original_data.eigenvectors,
+                                      original_data.eigenvalues,
+                                      from_gaussian=True)
+        gaussian_data.calc_mean()
+        gaussian_data.calc_cov()
+
         mf_res_x = matched_filter(0.065, original_data.cube, original_data.mean, original_data.cov,
                                   original_data.cube[4, 2].reshape(1, 1, -1))
-        mf_res_y = matched_filter(0.065, pca_data.cube, pca_data.mean, pca_data.cov,
-                                  pca_data.cube[4, 2].reshape(1, 1, -1))
+
+        mf_res_g = matched_filter(0.065, gaussian_data.cube, gaussian_data.mean, gaussian_data.cov,
+                                  original_data.cube[4, 2].reshape(1, 1, -1))
 
         stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
-        stats_y = calc_stats(mf_res_y[0], mf_res_y[1])
+        stats_g = calc_stats(mf_res_g[0], mf_res_g[1])
 
         for method in methods:
-            print('**************************************************************************************')
             print('Dataset: ', dataset_name)
             print('Method: ', method)
             print('**************************************************************************************')
@@ -57,15 +65,15 @@ if __name__ == "__main__":
                                       original_data.cube[4, 2].reshape(1, 1, -1))
 
             stats_q = calc_stats(mf_res_q[0], mf_res_q[1])
-            plot_stats([stats_x[0], stats_y[0], stats_q[0]],
-                       [stats_x[1], stats_y[1], stats_q[1]],
-                       [stats_x[2], stats_y[2], stats_q[2]],
-                       [stats_x[3], stats_y[3], stats_q[3]],
-                       [stats_x[4], stats_y[4], stats_q[4]],
-                       algo_name='MF', save_fig=True, legends=["Original data", "PCA data", "Artificial data"],
-                       name_of_the_dataset=dataset_name, name_of_estimation_method=method)
-            print("**************************************************************************************")
+            plot_stats([stats_x[0], stats_g[0], stats_q[0]],
+                       [stats_x[1], stats_g[1], stats_q[1]],
+                       [stats_x[2], stats_g[2], stats_q[2]],
+                       [stats_x[3], stats_g[3], stats_q[3]],
+                       [stats_x[4], stats_g[4], stats_q[4]],
+                       algo_name='MF', save_fig=True, legends=["Original data", "Gaussian cube", "Artificial data"],
+                       name_of_the_dataset=dataset_name, name_of_estimation_method=f"{method}")
             print("DONE : for data ", dataset_name, " and method ", method)
+            print('**************************************************************************************')
         print("**************************************************************************************")
         print("DONE : for data ", dataset_name)
         print("**************************************************************************************")
