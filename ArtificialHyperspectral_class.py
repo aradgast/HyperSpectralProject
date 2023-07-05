@@ -147,30 +147,30 @@ class HyperSpectralCube:
 class ArtificialHSC(HyperSpectralCube):
     """ this class initialize an artificial hyperspectral cube according to the original data"""
 
-    def __init__(self, original_data, eigenvectors, eigenvalues, from_gaussian=False):
+    def __init__(self, pca_data, eigenvectors, eigenvalues, from_gaussian=False):
         """ this function initialize the artificial hyperspectral cube
-        :param original_data: the original data
+        :param pca_data: the original data after PCA transformation
         :param eigenvectors: the eigenvectors of the original data
         :param eigenvalues: the eigenvalues of the original data
         """
         if not from_gaussian:
-            cube = np.zeros((original_data.rows, original_data.cols, original_data.bands))
-            for band in range(original_data.bands):
-                if original_data.nu[band] <= 0 or original_data.nu[band] > 50:
-                    cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(original_data.rows, original_data.cols))
+            cube = np.zeros((pca_data.rows, pca_data.cols, pca_data.bands))
+            for band in range(pca_data.bands):
+                if pca_data.nu[band] <= 0 or pca_data.nu[band] > 50:
+                    cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(pca_data.rows, pca_data.cols))
                 else:
-                    cube[:, :, band] = t_dist.rvs(original_data.nu[band], loc=0, scale=1,
-                                                  size=(original_data.rows, original_data.cols))
+                    cube[:, :, band] = t_dist.rvs(pca_data.nu[band], loc=0, scale=1,
+                                                  size=(pca_data.rows, pca_data.cols))
         else:
-            cube = np.random.multivariate_normal(mean=np.zeros(original_data.bands),
-                                                 cov=np.eye(original_data.bands),
-                                                 size=(original_data.rows, original_data.cols))
+            cube = np.random.multivariate_normal(mean=np.zeros(pca_data.bands),
+                                                 cov=np.eye(pca_data.bands),
+                                                 size=(pca_data.rows, pca_data.cols))
         super().__init__(header=None, cube=cube)
         self.calc_mean("global")
         self.calc_cov("global")
         for band in range(self.bands):
-            self.cube[:, :, band] *= (np.sqrt(original_data.cov[band, band]) / np.sqrt(self.cov[band, band]))
-        self.cube += original_data.mean
+            self.cube[:, :, band] *= (np.sqrt(pca_data.cov[band, band]) / np.sqrt(self.cov[band, band]))
+        self.cube += pca_data.mean
         self.calc_mean("global")
         self.calc_cov("global")
         # PCA
