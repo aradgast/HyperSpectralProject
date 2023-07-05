@@ -3,6 +3,7 @@
 # Author: Arad Gast, Ido Levokovich
 # Date: 03/2023
 # Description: this file contains the plot_detection_algo function
+import os
 
 #############################################################################################################
 
@@ -130,7 +131,12 @@ def plot_stats(hist_wt, hist_nt, fpr, tpr, thresholds,
     fig.suptitle(f'{algo_name} performance on {name_of_the_dataset} dataset with {name_of_estimation_method} as DOF estimation', fontsize=10)
     fig.tight_layout()
     if save_fig:
-        plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
+        try:
+            plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
+        except Exception as e:
+            print(e)
+            os.makedirs('plots')
+            plt.savefig(f"plots/{name_of_the_dataset}_{name_of_estimation_method}_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
     plt.show()
 
 
