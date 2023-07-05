@@ -156,7 +156,9 @@ class ArtificialHSC(HyperSpectralCube):
 
         cube = np.zeros((pca_data.rows, pca_data.cols, pca_data.bands))
         for band in range(pca_data.bands):
-            if pca_data.nu[band] <= 0 or pca_data.nu[band] > 50 or from_gaussian:
+            if from_gaussian:
+                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(pca_data.rows, pca_data.cols))
+            elif pca_data.nu[band] <= 0 or pca_data.nu[band] > 50 :
                 cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(pca_data.rows, pca_data.cols))
             else:
                 cube[:, :, band] = t_dist.rvs(pca_data.nu[band], loc=0, scale=1,
