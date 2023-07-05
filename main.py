@@ -79,6 +79,63 @@ if __name__ == "__main__":
         print("**************************************************************************************")
     print("Simulation Done.")
 
+    ####################################################################################################################
+    # Monte Carlo Simulation for AUC error.
+    NUMBER_OF_MONTE_CARLO = 30
+    datasets = {"Via-Reggio": 'data/D1_F12_H1_Cropped.hdr',
+                "RIT": 'data/self_test_rad.hdr'}
+    methods = ["Thiler", "Constant2", "MLE", "KS"]
+    auc_results = {"Via-Reggio": {"Thiler": [], "Constant2": [], "MLE": [], "KS": []},
+                    "RIT": {"Thiler": [], "Constant2": [], "MLE": [], "KS": []}}
+    print('**************************************************************************************')
+    print("Starting Monte-Carlo Simulation at ", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    print('Dataset: ', list(datasets.keys()))
+    print('Methods: ', methods)
+    print('**************************************************************************************')
+    for dataset_name, dataset_header in datasets.items():
+        original_data = HyperSpectralCube(dataset_header)
+        original_data.calc_mean()
+        original_data.calc_cov()
+
+        pca_data = original_data.pca_transform()
+        pca_data.calc_mean()
+        pca_data.calc_cov()
+        mf_res_x = matched_filter(0.065, original_data.cube, original_data.mean, original_data.cov,
+                                  original_data.cube[4, 2].reshape(1, 1, -1))
+        stats_x = calc_stats(mf_res_x[0], mf_res_x[1])
+        idx = len(stats_x[2][stats_x[2] <= 0.01])
+        X_auc = auc(stats_x[2][:idx], stats_x[3][:idx])
+        print("X AUC: ", X_auc)
+
+        for method in methods:
+            pca_data.calc_nu(method)
+            for i in range(NUMBER_OF_MONTE_CARLO):
+                artifical_data = ArtificialHSC(pca_data, original_data.eigenvectors, original_data.eigenvalues)
+                mf_res_q = matched_filter(0.065, artifical_data.cube, artifical_data.mean, artifical_data.cov,
+                                          original_data.cube[4, 2].reshape(1, 1, -1))
+                histogram_wt, histogram_nt, fpr, tpr, thresholds = calc_stats(mf_res_q[0], mf_res_q[1])
+                idx = len(fpr[fpr <= 0.01])
+                auc_results[dataset_name][method].append(auc(fpr[:idx], tpr[:idx]))
+                if i % 5 == 0:
+                    print(f"Dataset: {dataset_name}, Method: {method},"
+                          f" {i}.AUC = {np.mean(auc_results[dataset_name][method])}")
+            print("DONE : for data ", dataset_name, " and method ", method)
+            print('**************************************************************************************')
+        print("**************************************************************************************")
+        print("DONE : for data ", dataset_name)
+        print("**************************************************************************************")
+    print("**************************************************************************************")
+    for dataset_name, dataset_header in datasets.items():
+        print(f"Dataset: {dataset_name}")
+        for method in methods:
+            mean_auc = np.mean(auc_results[dataset_name][method])
+            realtive_error = (np.abs(mean_auc - X_auc) / X_auc) * 100
+            print(f"Method: {method}, AUC: {mean_auc}, relative error: {realtive_error}")
+    print("*** Monte-Carlo Simulation Done. ***")
+
+
+    ####################################################################################################################
+
     # header = r'data\self_test_rad.hdr'                       # 'D1_F12_H1_Cropped.hdr', 'blind_test_refl.hdr', 'self_test_rad.hdr', 'bulb_0822-0903.hdr'
     # statistical_method = 'global'                               # 'global', 'local'
     # name = f'RIT_with_{statistical_method}_last_try'      # 'ViaReggio', 'RIT'
