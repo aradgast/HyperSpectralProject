@@ -130,7 +130,7 @@ class HyperSpectralCube:
         plt.xlabel("Band")
         plt.ylabel("DOF")
         plt.grid()
-        plt.savefig(f"plots/{title}_{datetime.datetime.now().strftime('%d_%m_%Y__%H_%M_%S')}.png")
+        plt.savefig(f"{title}_{datetime.datetime.now().strftime('%d_%m_%Y__%H_%M_%S')}.png")
         plt.show()
 
     def __str__(self):
@@ -153,36 +153,36 @@ class ArtificialHSC(HyperSpectralCube):
         :param eigenvectors: the eigenvectors of the original data
         :param eigenvalues: the eigenvalues of the original data
         """
-        if not from_gaussian:
-            cube = np.zeros((pca_data.rows, pca_data.cols, pca_data.bands))
-            for band in range(pca_data.bands):
-                if pca_data.nu[band] <= 0 or pca_data.nu[band] > 50:
-                    cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(pca_data.rows, pca_data.cols))
-                else:
-                    cube[:, :, band] = t_dist.rvs(pca_data.nu[band], loc=0, scale=1,
-                                                  size=(pca_data.rows, pca_data.cols))
-        else:
-            cube = np.random.multivariate_normal(mean=np.zeros(pca_data.bands),
-                                                 cov=np.eye(pca_data.bands),
-                                                 size=(pca_data.rows, pca_data.cols))
+
+        cube = np.zeros((pca_data.rows, pca_data.cols, pca_data.bands))
+        for band in range(pca_data.bands):
+            if pca_data.nu[band] <= 0 or pca_data.nu[band] > 50 or from_gaussian:
+                cube[:, :, band] = np.random.normal(loc=0, scale=1, size=(pca_data.rows, pca_data.cols))
+            else:
+                cube[:, :, band] = t_dist.rvs(pca_data.nu[band], loc=0, scale=1,
+                                              size=(pca_data.rows, pca_data.cols))
+
+
         super().__init__(header=None, cube=cube)
         self.calc_mean("global")
         self.calc_cov("global")
+        self.cube = self.cube - self.mean
         for band in range(self.bands):
             self.cube[:, :, band] *= (np.sqrt(pca_data.cov[band, band]) / np.sqrt(self.cov[band, band]))
         self.cube += pca_data.mean
-        self.calc_mean("global")
-        self.calc_cov("global")
+        self.calc_mean("local")
+        self.calc_cov("local")
         # PCA
         self.cube, self.eigenvectors, self.eigenvalues = get_pca(self.cube, self.mean, self.cov)
-        self.calc_mean("global")
-        self.calc_cov("global")
+        self.calc_mean("local")
+        self.calc_cov("local")
         # Projection
         for r in range(self.rows):
             for c in range(self.cols):
                 self.cube[r, c, :] = np.matmul(eigenvectors, self.cube[r, c, :] * np.sqrt(eigenvalues))
-        self.calc_mean("global")
-        self.calc_cov("global")
+        self.calc_mean("local")
+        self.calc_cov("local")
+
 
 
 class ArtificialHyperspectralCube:
