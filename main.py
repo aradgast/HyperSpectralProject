@@ -11,10 +11,20 @@ from local_mean_covariance import get_m8, get_cov8
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import datetime
+import sys
+from pathlib import Path
 
 warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
+    global_path = Path.cwd()
+
+    save_print_to_file = False
+    if save_print_to_file:
+        file_path = global_path / 'results' / 'scores' / 'simulation'
+        sys.stdout = open(f'{file_path}.txt', 'w')
+
+
     # NEW FORMATTING
     datasets = {"Via-Reggio": 'data/D1_F12_H1_Cropped.hdr',
                 "RIT": 'data/self_test_rad.hdr'}
