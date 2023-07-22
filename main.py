@@ -69,43 +69,43 @@ if __name__ == "__main__":
             histogram_wt_q, histogram_nt_q, fpr_q, tpr_q, thresholds_q = calc_stats(mf_res_q[0], mf_res_q[1])
 
             #plots: LOG scale histogram and ROC curve
-            fig, ax = plt.subplots(1, 2, figsize=(10, 5))
             #log scale histogram
-            ax[0].plot(histogram_wt_x[1][1:], np.log10(histogram_wt_x[0]),
+            plt.figure(figsize=(10, 5))
+            plt.plot(histogram_wt_x[1][1:], np.log10(histogram_wt_x[0]),
                        label='Original data_WT', color='g', linewidth=3)
-            ax[0].plot(histogram_nt_x[1][1:], np.log10(histogram_nt_x[0]),
+            plt.plot(histogram_nt_x[1][1:], np.log10(histogram_nt_x[0]),
                        "--", label='Original data_NT', color ='g', linewidth=3)
-            ax[0].plot(histogram_wt_g[1][1:], np.log10(histogram_wt_g[0]),
+            plt.plot(histogram_wt_g[1][1:], np.log10(histogram_wt_g[0]),
                        label='Gaussian artificial data_WT', color='b', linewidth=2)
-            ax[0].plot(histogram_nt_g[1][1:], np.log10(histogram_nt_g[0]),
+            plt.plot(histogram_nt_g[1][1:], np.log10(histogram_nt_g[0]),
                           "--", label='Gaussian artificial data_NT', color='b', linewidth=2)
-            ax[0].plot(histogram_wt_q[1][1:], np.log10(histogram_wt_q[0]),
+            plt.plot(histogram_wt_q[1][1:], np.log10(histogram_wt_q[0]),
                           label='Artificial data_WT', color='r', linewidth=2)
-            ax[0].plot(histogram_nt_q[1][1:], np.log10(histogram_nt_q[0]),
+            plt.plot(histogram_nt_q[1][1:], np.log10(histogram_nt_q[0]),
                             "--", label='Artificial data_NT', color='r', linewidth=2)
-            ax[0].set_title(f'Log10 Histogram Results')
-            ax[0].set_ylabel('log10(Number of samples)')
-            ax[0].set_xlabel('Detection score')
-            ax[0].grid()
-            ax[0].legend(loc='upper left')
-            ax[0].set_xlim(-1000, 1000)
+            plt.title(f'Log10 Histogram Results')
+            plt.ylabel('log10(Number of samples)')
+            plt.xlabel('Detection score')
+            plt.grid()
+            plt.legend(loc='upper left')
+            plt.xlim(-1000, 1000)
+            plt.savefig(f"plots/{dataset_name}_{method}_log10_histogram_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
+            plt.show()
 
             #ROC curve
-            ax[1].plot(fpr_x, tpr_x, label='Original data', color='g', linewidth=3)
-            ax[1].plot(fpr_g, tpr_g, label='Gaussian artificial data', color='b', linewidth=2)
-            ax[1].plot(fpr_q, tpr_q, label='Artificial data', color='r', linewidth=2)
-            ax[1].set_title(f'ROC curve with limited pfa = 0.01')
-            ax[1].set_ylabel('TPR')
-            ax[1].set_xlabel('FPR')
-            ax[1].grid()
-            ax[1].legend(loc='lower right')
-            ax[1].set_xlim(0, 0.01)
-            ax[1].set_ylim(0, 1)
-
-            fig.suptitle(f'{dataset_name} - {method}')
-            fig.tight_layout()
-            plt.savefig(f"plots/{dataset_name}_{method}_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
+            plt.plot(fpr_x, tpr_x, label='Original data', color='g', linewidth=3)
+            plt.plot(fpr_g, tpr_g, label='Gaussian artificial data', color='b', linewidth=2)
+            plt.plot(fpr_q, tpr_q, label='Artificial data', color='r', linewidth=2)
+            plt.title(f'ROC curve with limited pfa = 0.01')
+            plt.ylabel('TPR')
+            plt.xlabel('FPR')
+            plt.grid()
+            plt.legend(loc='lower right')
+            plt.xlim(0, 0.01)
+            plt.ylim(0, 1)
+            plt.savefig(f"plots/{dataset_name}_{method}_ROC_curve_{datetime.datetime.now().strftime('_%d_%m_%Y__%H_%M_%S')}.png")
             plt.show()
+
             print("DONE : for data ", dataset_name, " and method ", method)
             print('**************************************************************************************')
         print("**************************************************************************************")
