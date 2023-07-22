@@ -28,7 +28,7 @@ def find_nu(cube, mean_matrix, cov, method='Constant2'):
     """
     cube_no_mean = np.subtract(cube, mean_matrix)
     # 1. estimate nu based on james tyler formula
-    if method == 'Thiler':
+    if method == 'Suggested method':
         bands = cube.shape[2]
         nu = np.zeros((bands, 1))
         for i in range(bands):
